@@ -222,7 +222,7 @@ class Search(object):
   
   def is_upvoted(self,img_id):
      up = []
-     for img in self.limit(1).query(f'id:{img_id}','my:upvotes'):
+     for img in self.filter(56027).limit(1).query(f'id:{img_id}','my:upvotes'):
         up.append(img)
      if len(up)==0:
         return False;
