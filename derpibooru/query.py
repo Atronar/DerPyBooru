@@ -39,11 +39,7 @@ class Query_Field(object):
 class Equal(Query_Field):
   def __eq__(self, value):
     if value:
-      return "{}{}:{}".format(
-        "-" if self.is_neg else "",
-        self.name,
-        value
-      )
+      return f"{'-' if self.is_neg else ''}{self.name}:{value}"
     else:
       raise ValueError(value)
 
@@ -64,12 +60,7 @@ class Comparable(Query_Field):
   def op(self, op, value):
     try:
       float(value)
-      return "{}{}.{}:{}".format(
-        "-" if self.is_neg else "",
-        self.name,
-        op,
-        value
-      )
+      return f"{'-' if self.is_neg else ''}{self.name}.{op}:{value}"
     except:
       raise ValueError(value)
  

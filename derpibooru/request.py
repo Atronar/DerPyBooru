@@ -25,7 +25,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from requests import get, codes
-from sys import version_info
 from .helpers import format_params, join_params
 
 __all__ = [
@@ -36,21 +35,18 @@ __all__ = [
   "set_limit"
 ]
 
-if version_info < (3, 0):
-  from urllib import urlencode
-else:
-  from urllib.parse import urlencode
+from urllib.parse import urlencode
 
 def url(params):
   p = format_params(params)
-  url = "https://derpibooru.org/search?{}".format(urlencode(p))
+  url = f"https://derpibooru.org/search?{urlencode(p)}"
 
   return url
 
-def request(params):
+def request(params,proxy={}):
   search, p = "https://derpibooru.org/search.json", format_params(params)
 
-  request = get(search, params=p)
+  request = get(search, params=p, proxies=proxy)
 
   while request.status_code == codes.ok:
     images, image_count = request.json()["search"], 0
@@ -62,34 +58,34 @@ def request(params):
 
     p["page"] += 1
 
-    request = get(search, params=p)
+    request = get(search, params=p, proxies=proxy)
 
-def get_images(parameters, limit=50):
-  params = join_params(parameters, {"perpage": 50, "page": 1})
+def get_images(parameters, limit=50, proxy={}):
+  params = parameters
 
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = request(params), 0
+      r, counter = request(params, proxy=proxy), 0
       for index, image in enumerate(r, start=1):
         yield image
         if index >= l:
           break
   else:
-    r = request(params)
+    r = request(params, proxy=proxy)
     for image in r:
       yield image
 
-def get_image_data(id_number):
-  url = "https://derpibooru.org/{}.json?fav=&comments=".format(id_number)
+def get_image_data(id_number, proxy={}):
+  url = f"https://derpibooru.org/{id_number}.json?fav=&comments="
 
-  request = get(url)
+  request = get(url, proxies=proxy)
 
   if request.status_code == codes.ok:
     data = request.json()
 
     if "duplicate_of" in data:
-      return get_image_data(data["duplicate_of"])
+      return get_image_data(data["duplicate_of"], proxy=proxy)
     else:
       return data
 

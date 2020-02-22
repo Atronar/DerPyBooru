@@ -15,24 +15,16 @@ Version: **0.7**
 
 ## Dependencies
 
-- python2.7 or newer
+- python3.6 or newer
 - requests
 
 ## How to install
-
-### Python 2.7
-
-    $ pip install derpybooru
 
 ### Python 3.x
 
     $ pip3 install derpybooru
  
 ## Checking documentation
-
-### Python 2.7
-
-    $ pydoc derpibooru
 
 ### Python 3.x
 
@@ -123,4 +115,10 @@ key = "your_api_key"
 for post in Search().key(key).watched(user.ONLY):
   id_number, score, tags = post.id, post.score, ", ".join(post.tags)
   print("#{} - score: {:>3} - {}".format(id_number, score, tags))
+```
 
+## Changed by ATroN
+
+- Only python >=3.6
+- Available using proxies 
+- Extended Search and Image (like paging, getting top, ratings etc.)

@@ -24,8 +24,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from sys import version_info
-
 from .request import get_images, url
 from .image import Image
 from .helpers import tags, api_key, sort_format, join_params, user_option, set_limit, validate_filter
@@ -44,11 +42,12 @@ class Search(object):
   easy.
   """
   def __init__(self, key="", q={}, sf="created_at", sd="desc", limit=50,
-               faves="", upvotes="", uploads="", watched="", filter_id=""):
+               faves="", upvotes="", uploads="", watched="", filter_id="", perpage=50, page=1, proxy={}):
     """
     By default initializes an instance of Search with the parameters to get
     the first 50 images on Derpibooru's front page.
     """
+    self.proxy = proxy
     self._params = {
       "key": api_key(key),
       "q": tags(q),
@@ -58,10 +57,12 @@ class Search(object):
       "upvotes": user_option(upvotes),
       "uploads": user_option(uploads),
       "watched": user_option(watched),
-      "filter_id": validate_filter(filter_id)
+      "filter_id": validate_filter(filter_id),
+      "perpage": perpage,
+      "page": page
     }
     self._limit = set_limit(limit)
-    self._search = get_images(self._params, self._limit)
+    self._search = get_images(self._params, self._limit, proxy=self.proxy)
   
   def __iter__(self):
     """
@@ -124,11 +125,11 @@ class Search(object):
 
     return self.__class__(**params)
 
-  def ascending(self):
+  def ascending(self, sd="asc"):
     """
     Order results from smallest to largest; default is descending order.
     """
-    params = join_params(self.parameters, {"sd": "asc"})
+    params = join_params(self.parameters, {"sd": sd})
 
     return self.__class__(**params)
 
@@ -189,21 +190,52 @@ class Search(object):
 
     return self.__class__(**params)
 
-if version_info < (3, 0):
-  def next(self):
-    """
-    Returns a result wrapped in a new instance of Image().
-    """
-    return Image(self._search.next())
+  def top(self,limited=50):
+     return self.sort_by(sort.SCORE).limit(limited).query('first_seen_at.gt:3 days ago')
+  
+  def get_non_upvoted(self,limited=50):
+     return self.upvotes(user.NOT).limit(limited)
 
-  Search.next = next
+  def get_upvoted(self,limited=50):
+     return self.query_append().limit(limited)
 
-else:
+  # ids - list of int
+  def exclude_by_id(self,ids=[]):
+     q=''
+     if ids:
+        for elem in ids[:-1]:
+           q = f'{q}-id:{elem},'
+        q = f'{q}-id:{ids[-1]}'
+     return q
+
+  def query_append(self,*q):
+     query = self._params['q'].union(q)
+     params = join_params(self.parameters, {"q": query})
+
+     return self.__class__(**params)
+
+  def query_remove(self,*q):
+     query = self._params['q'].difference(q)
+     params = join_params(self.parameters, {"q": query})
+
+     return self.__class__(**params)
+  
+  def is_upvoted(self,img_id):
+     up = []
+     for img in self.limit(1).query(f'id:{img_id}','my:upvotes'):
+        up.append(img)
+     if len(up)==0:
+        return False;
+     else:
+        return True;
+
+  def get_page(self,page):
+    params = join_params(self.parameters, {"page": page})
+
+    return self.__class__(**params)
+
   def __next__(self):
     """
     Returns a result wrapped in a new instance of Image().
     """
-    return Image(next(self._search))
-
-  Search.__next__ = __next__
-
+    return Image(next(self._search), proxy=self.proxy)

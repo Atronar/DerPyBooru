@@ -35,7 +35,7 @@ class Comment(object):
       setattr(self, field, body)
 
   def __str__(self):
-    return "Comment({0})".format(self.author)
+    return f"Comment({self.author})"
 
   @property
   def data(self):

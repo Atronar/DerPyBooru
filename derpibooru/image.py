@@ -38,7 +38,8 @@ class Image(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API
   """
-  def __init__(self, data):
+  def __init__(self, data, proxy={}):
+    self.proxy = proxy
     self._data = data
 
     for field, body in data.items():
@@ -46,7 +47,7 @@ class Image(object):
         setattr(self, field, body) 
 
   def __str__(self):
-    return "Image({0})".format(self.id)
+    return f"Image({self.id})"
 
   @property
   def tags(self):
@@ -55,7 +56,7 @@ class Image(object):
   @property
   def representations(self):
     sizes = self.data["representations"].items()
-    images = { image: "https:{}".format(url) for image, url in sizes }
+    images = { image: f"https:{url}" for image, url in sizes }
 
     return images
 
@@ -73,9 +74,7 @@ class Image(object):
 
   @property
   def full(self):
-    url = sub("_.*\.", ".", self.image)
-
-    return url
+    return self.representations["full"]
 
   @property
   def tall(self):
@@ -95,7 +94,7 @@ class Image(object):
 
   @property
   def image(self):
-    return self.representations["full"]
+    return f'https:{self.data["image"]}'
 
   @property
   def faved_by(self):
@@ -121,15 +120,57 @@ class Image(object):
        
   @property
   def url(self):
-    return "https://derpibooru.org/{}".format(self.id)
+    return f"https://derpibooru.org/{self.id}"
 
   @property
   def data(self):
     return self._data
 
   def update(self):
-    data = get_image_data(self.id)
+    data = get_image_data(self.id, proxy=proxy)
 
     if data:
       self._data = data
 
+  @property
+  def artists(self):
+      _list = [];
+      for tag in self.tags:
+         if tag.startswith("artist:") or tag.startswith("editor:"):
+            _list.append(tag[7:]);
+         elif tag.startswith("colorist:"):
+            _list.append(tag[9:]);
+         elif tag in ("artist needed","anonymous artist"):
+            _list.append(tag);
+      return _list;
+
+  @property
+  def rating(self):
+      _list = [];
+      for tag in self.tags:
+         if tag in ("safe","suggestive","questionable","explicit","semi-grimdark","grimdark","grotesque"):
+            _list.append(tag);
+      return _list;
+
+  @property
+  def species(self):
+      _list = [];
+      for tag in self.tags:
+         if tag in ("pony","earth pony","pegasus","unicorn","alicorn","zebra","zebrasus","zebracorn","zebra alicorn","zony","bat pony","bat unicorn","bat alicorn","dragon","changeling","changeling queen","changedling","breezie","yak","hippogriff","griffon","seapony","seapony (g4)","merpony","dracony","demon pony","tatzlpony","kirin","abyssinian","semi-anthro","anthro","unguligrade anthro","plantigrade anthro","digitigrade anthro","anthro centaur","centaur","human","humanized","mermaid","hybrid","original species"):
+            _list.append(tag);
+      return _list;
+
+  @property
+  def source(self):
+      if self.data['source_url']:
+         return self.data['source_url'];
+      else:
+         return self.url;
+
+  @property
+  def width(self):
+      return f'https:{self.data["width"]}'
+
+  @property
+  def height(self):
+      return f'https:{self.data["height"]}'
