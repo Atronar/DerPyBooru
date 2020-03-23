@@ -36,16 +36,81 @@ from .sort import sort
 from .user import user
 
 def tags(q):
+  if ',' in q:
+    q = q.split(',')
   tags = {str(tag).strip() for tag in q if tag}
 
-  return tags if tags else {}
+  return tags if tags else set()
+
+def search_comments_fields(q, author="", body="", created_at="", comment_id="", image_id="", my=None, user_id=""):
+  if ',' in q:
+    q = q.split(',')
+
+  if isinstance(body,str):
+     if body:
+       tags = body.split(',');
+     else:
+       tags = []
+  elif hasattr(body,"__iter__"): # iterable: lists, sets, etc.
+    tags = list(body)
+  else:
+    tags = []
+
+  for tag in q:
+    if tag:
+      tag = str(tag).strip()
+      if tag.startswith("author:"):
+        if not author:
+          author = tag.split("author:",1)[-1]
+      elif tag.startswith("created_at:"):
+        if not created_at:
+          created_at = tag.split("created_at:",1)[-1]
+      elif tag.startswith("comment_id:"):
+        if not comment_id:
+          comment_id = tag.split("comment_id:",1)[-1]
+      elif tag.startswith("image_id:"):
+        if not image_id:
+          image_id = tag.split("image_id:",1)[-1]
+      elif tag.startswith("user_id:"):
+        if not user_id:
+          user_id = tag.split("user_id:",1)[-1]
+      elif tag.startswith("-my:"): # -my:comments
+        if my is None: 
+          if tag is "-my:comments":
+            my = False
+      elif tag.startswith("my:"): # my:comments
+        if not my: 
+          if tag is "my:comments":
+            my = True
+      else:
+        tags.append(tag)
+
+  if author:
+    tags.append(f"author:{author}")
+  if created_at:
+    tags.append(f"created_at:{created_at}")
+  if comment_id:
+    tags.append(f"id:{comment_id}")
+  if image_id:
+    tags.append(f"image_id:{image_id}")
+  if user_id:
+    tags.append(f"user_id:{user_id}")
+  if my is not None:
+    if my:
+      tags.append("my:comments")
+    else:
+      tags.append("-my:comments")
+
+  tags = set(tags)
+
+  return tags if tags else set()
 
 def api_key(api_key):
   return str(api_key) if api_key else ""
 
 def validate_filter(filter_id):
   # is it always an number?
-  return str(filter_id) if filter_id else ""
+  return str(filter_id) if filter_id else None
 
 def sort_format(sf):
   if sf not in sort.methods:
@@ -69,9 +134,6 @@ def format_params(params):
     if key == "key":
       if value:
         p["key"] = value
-    elif key in ("faves", "upvotes", "uploads", "watched"):
-      if value and params["key"]:
-        p[key] = value
     elif key == "q":
       p["q"] = ",".join(value) if value else "*"
     else:

@@ -6,7 +6,7 @@ from setuptools import find_packages
 setup(
   name = "DerPyBooru",
   description = "Python bindings for Derpibooru's API",
-  url = "https://github.com/joshua-stone/DerPyBooru",
+  url = "https://github.com/Atronar/DerPyBooru",
   version = "0.7.2",
   author = "Joshua Stone",
   author_email = "joshua.gage.stone@gmail.com",
@@ -22,7 +22,6 @@ setup(
     "Operating System :: OS Independent",
     "License :: OSI Approved :: BSD License",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3"
   ]
 )

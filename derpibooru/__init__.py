@@ -25,12 +25,18 @@ __license__ = "Simplified BSD Licence"
 __copyright__ = "Copyright (c) 2014, Joshua Stone"
 
 from .search import Search
+from .image import Image
+from .comments import Comments
+from .comment import Comment
 from .query import query
 from .sort import sort
 from .user import user
 
 __all__ = [
   "Search",
+  "Image",
+  "Comments",
+  "Comment"
   "query",
   "sort",
   "user"

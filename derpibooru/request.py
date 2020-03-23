@@ -43,13 +43,12 @@ def url(params):
 
   return url
 
-def request(params,proxy={}):
-  search, p = "https://derpibooru.org/search.json", format_params(params)
-
-  request = get(search, params=p, proxies=proxy)
+def request(params,proxies={}):
+  search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
+  request = get(search, params=p, proxies=proxies)
 
   while request.status_code == codes.ok:
-    images, image_count = request.json()["search"], 0
+    images, image_count = request.json()["images"], 0
     for image in images:
       yield image
       image_count += 1
@@ -58,34 +57,136 @@ def request(params,proxy={}):
 
     p["page"] += 1
 
-    request = get(search, params=p, proxies=proxy)
+    request = get(search, params=p, proxies=proxies)
 
-def get_images(parameters, limit=50, proxy={}):
-  params = parameters
-
+def get_images(params, limit=50, proxies={}):
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = request(params, proxy=proxy), 0
+      r, counter = request(params, proxies=proxies), 0
+
       for index, image in enumerate(r, start=1):
         yield image
         if index >= l:
           break
   else:
-    r = request(params, proxy=proxy)
+    r = request(params, proxies=proxies)
     for image in r:
       yield image
 
-def get_image_data(id_number, proxy={}):
-  url = f"https://derpibooru.org/{id_number}.json?fav=&comments="
+def get_image_data(id_number, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/images/{id_number}"
 
-  request = get(url, proxies=proxy)
+  request = get(url, proxies=proxies)
 
   if request.status_code == codes.ok:
     data = request.json()
 
     if "duplicate_of" in data:
-      return get_image_data(data["duplicate_of"], proxy=proxy)
+      return get_image_data(data["duplicate_of"], proxies=proxies)
     else:
-      return data
+      return data["image"]
 
+def get_image_faves(id_number, proxies={}):
+  url = f"https://derpibooru.org/images/{id_number}/favorites"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.text.rsplit('</h5>',1)[-1].strip()
+    if data.endswith('</a>'):
+       data = data[:-4]
+    data = data.split("</a> <")
+    data = [useritem.rsplit('">',1)[-1] for useritem in data]
+    return data
+
+def request_related(id_number, params, proxies={}):
+  search, p = f"https://www.derpibooru.org/images/{id_number}/related.json", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    images, image_count = request.json()["images"], 0
+    for image in images:
+      yield image
+      image_count += 1
+    if image_count < 50:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_related(id_number, params, limit=50, proxies={}):
+  if limit is not None:
+    l = limit
+    if l > 0:
+      r, counter = request_related(id_number, params, proxies=proxies), 0
+
+      for index, image in enumerate(r, start=1):
+        yield image
+        if index >= l:
+          break
+  else:
+    r = request_related(id_number, params, proxies=proxies)
+    for image in r:
+      yield image
+
+def get_user_id_by_name(username, proxies={}):
+  url = f"https://derpibooru.org/profiles/{username.replace(' ','+')}"
+
+  request = get(url, proxies=proxies)
+
+  profile_data = request.text
+  user_id = profile_data.split("/conversations?with=",1)[-1].split('">',1)[0]
+  return user_id
+
+def url_comments(params):
+  p = format_params(params)
+  p["qc"]=p["q"]
+  del(p["q"])
+  url = f"https://derpibooru.org/comments?{urlencode(p)}"
+
+  return url
+
+def comments_requests(params, limit=50, proxies={}):
+  search, p = "https://derpibooru.org/api/v1/json/search/comments", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    comments, comment_count = request.json()["comments"], 0
+    for comment in comments:
+      yield comment
+      comment_count += 1
+    if comment_count < 50:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_comments(parameters, limit=50, proxies={}):
+  params = parameters
+
+  if limit is not None:
+    l = limit
+    if l > 0:
+      r, counter = comments_requests(params, proxies=proxies), 0
+
+      for index, comment in enumerate(r, start=1):
+        yield comment
+        if index >= l:
+          break
+  else:
+    r = comments_requests(params, proxies=proxies)
+    for comment in r:
+      yield comment
+
+def get_comment_data(id_number, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/comments/{id_number}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+
+    return data["comment"]

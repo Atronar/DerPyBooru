@@ -37,10 +37,19 @@ class Sort(object):
   def methods(self):
     sorting_methods = {
       "created_at",
+      "updated_at",
+      "first_seen_at",
+      "aspect_ratio",
+      "faves",
+      "upvotes",
+      "downvotes",
       "score",
+      "wilson_score",
       "relevance",
+      "width",
       "height",
       "comments",
+      "tag_count",
       "random"
     }
 

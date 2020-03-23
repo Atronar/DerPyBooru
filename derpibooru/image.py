@@ -25,8 +25,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from re import sub
-from .request import get_image_data
+from .request import get_image_data, get_image_faves, request as request_image
 from .comment import Comment
+from .comments import Comments
 
 __all__ = [
   "Image"
@@ -36,11 +37,17 @@ class Image(object):
   """
   This class provides a thin wrapper around JSON data, mapping each value to
   its own property. Once instantiated the data is immutable so as to reflect
-  the stateless nature of a REST API
+  the stateless nature of a REST API.
+  For getting image by id field data should be None and image_id contains id.
+  API key need for checking my:***
   """
-  def __init__(self, data, proxy={}):
-    self.proxy = proxy
-    self._data = data
+  def __init__(self, data, image_id=None, key="", proxies={}):
+    self.proxies = proxies
+    self.key = key # needed for checking my:***
+    if data is None and image_id:
+      self._data = data = get_image_data(image_id, proxies=proxies)
+    else:
+      self._data = data
 
     for field, body in data.items():
       if not hasattr(self, field):
@@ -51,34 +58,18 @@ class Image(object):
 
   @property
   def tags(self):
-    return self.data["tags"].split(", ")
+    return self.data["tags"]
 
   @property
   def representations(self):
     sizes = self.data["representations"].items()
-    images = { image: f"https:{url}" for image, url in sizes }
+    images = { image: url for image, url in sizes }
 
     return images
 
   @property
-  def thumb(self):
-    return self.representations["thumb"]
-
-  @property
-  def thumb_tiny(self):
-    return self.representations["thumb_tiny"]
-
-  @property
-  def small(self):
-    return self.representations["small"]
-
-  @property
   def full(self):
     return self.representations["full"]
-
-  @property
-  def tall(self):
-    return self.representations["tall"]
 
   @property
   def large(self):
@@ -89,12 +80,28 @@ class Image(object):
     return self.representations["medium"]
 
   @property
+  def small(self):
+    return self.representations["small"]
+
+  @property
+  def tall(self):
+    return self.representations["tall"]
+
+  @property
+  def thumb(self):
+    return self.representations["thumb"]
+
+  @property
   def thumb_small(self):
     return self.representations["thumb_small"]
 
   @property
+  def thumb_tiny(self):
+    return self.representations["thumb_tiny"]
+
+  @property
   def image(self):
-    return f'https:{self.data["image"]}'
+    return self.data["view_url"]
 
   @property
   def faved_by(self):
@@ -102,7 +109,7 @@ class Image(object):
 
     if not faved_by in self.data:
       if self.faves > 0:
-        self.update()
+        self._data[faved_by] = get_image_faves(self.id, proxies=self.proxies)
       else:
         self._data[faved_by] = []
 
@@ -110,67 +117,108 @@ class Image(object):
 
   @property
   def comments(self):
-    if not "comments" in self.data:
-      if self.comment_count > 0:
-        self.update()
-      else:
-        self._data["comments"] = []
-
-    return [Comment(c) for c in self.data["comments"]]
+    # filter_id used to get comments for any image
+    return Comments(filter_id=56027, proxies=self.proxies).image_id(self.id)
        
   @property
   def url(self):
-    return f"https://derpibooru.org/{self.id}"
+    return f"https://derpibooru.org/images/{self.id}"
 
   @property
   def data(self):
     return self._data
 
   def update(self):
-    data = get_image_data(self.id, proxy=proxy)
+    data = get_image_data(self.id, proxies=self.proxies)
 
     if data:
       self._data = data
 
   @property
   def artists(self):
-      _list = [];
-      for tag in self.tags:
-         if tag.startswith("artist:") or tag.startswith("editor:"):
-            _list.append(tag[7:]);
-         elif tag.startswith("colorist:"):
-            _list.append(tag[9:]);
-         elif tag in ("artist needed","anonymous artist"):
-            _list.append(tag);
-      return _list;
+    artist_tags = []
+    for tag in self.tags:
+      if tag.startswith("artist:") or tag.startswith("editor:"):
+        artist_tags.append(tag[7:])
+      elif tag.startswith("colorist:"):
+        artist_tags.append(tag[9:])
+      elif tag in {"artist needed","anonymous artist"}:
+        artist_tags.append(tag)
+    return artist_tags
 
   @property
   def rating(self):
-      _list = [];
-      for tag in self.tags:
-         if tag in ("safe","suggestive","questionable","explicit","semi-grimdark","grimdark","grotesque"):
-            _list.append(tag);
-      return _list;
+    all_ratings = {"safe","suggestive","questionable","explicit","semi-grimdark","grimdark","grotesque"}
+    rating_tags = list(set(self.tags).intersection(all_ratings))
+    return rating_tags
 
   @property
   def species(self):
-      _list = [];
-      for tag in self.tags:
-         if tag in ("pony","earth pony","pegasus","unicorn","alicorn","zebra","zebrasus","zebracorn","zebra alicorn","zony","bat pony","bat unicorn","bat alicorn","dragon","changeling","changeling queen","changedling","breezie","yak","hippogriff","griffon","seapony","seapony (g4)","merpony","dracony","demon pony","tatzlpony","kirin","abyssinian","semi-anthro","anthro","unguligrade anthro","plantigrade anthro","digitigrade anthro","anthro centaur","centaur","human","humanized","mermaid","hybrid","original species"):
-            _list.append(tag);
-      return _list;
+    all_species = {"pony","earth pony","pegasus","unicorn","alicorn","zebra","zebrasus","zebracorn","zebra alicorn","zony","bat pony","bat unicorn","bat alicorn","dragon","changeling","changeling queen","changedling","breezie","yak","hippogriff","griffon","seapony","seapony (g4)","merpony","dracony","demon pony","tatzlpony","kirin","abyssinian","semi-anthro","anthro","unguligrade anthro","plantigrade anthro","digitigrade anthro","anthro centaur","centaur","human","humanized","mermaid","hybrid","original species"}
+    rating_tags = list(set(self.tags).intersection(all_species))
+    return rating_tags
 
   @property
   def source(self):
-      if self.data['source_url']:
-         return self.data['source_url'];
-      else:
-         return self.url;
+    if self.data['source_url']:
+      return self.data['source_url']
+    else:
+      return self.url
+  
+  @property
+  def upvoted(self):
+    """
+    Checking image in my:upvotes.
+    """
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:upvotes']}, proxies=self.proxies)
+    for img in images:
+      return True
+    return False
+  
+  @property
+  def downvoted(self):
+    """
+    Checking image in my:downvotes.
+    """
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:downvotes']}, proxies=self.proxies)
+    for img in images:
+      return True
+    return False
+  
+  @property
+  def uploaded(self):
+    """
+    Checking image in my:uploads.
+    """
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:uploads']}, proxies=self.proxies)
+    for img in images:
+      return True
+    return False
+  
+  @property
+  def faved(self):
+    """
+    Checking image in my:faves.
+    """
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:faves']}, proxies=self.proxies)
+    for img in images:
+      return True
+    return False
+  
+  @property
+  def watched(self):
+    """
+    Checking image in my:watches.
+    """
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:faves']}, proxies=self.proxies)
+    for img in images:
+      return True
+    return False
 
   @property
   def width(self):
-      return f'https:{self.data["width"]}'
+    return self.data["width"]
 
   @property
   def height(self):
-      return f'https:{self.data["height"]}'
+    return self.data["height"]
