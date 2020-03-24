@@ -136,13 +136,13 @@ def format_params(params):
         p["key"] = value
     elif key == "q":
       p["q"] = ",".join(value) if value else "*"
-    else:
+    elif value:
       p[key] = value
 
   return p
 
 def join_params(old_params, new_params):
-  new_dict = dict(list(old_params.items()) + list(new_params.items()))
+  new_dict = {**old_params, **new_params}
 
   return new_dict
 

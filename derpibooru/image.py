@@ -41,9 +41,10 @@ class Image(object):
   For getting image by id field data should be None and image_id contains id.
   API key need for checking my:***
   """
-  def __init__(self, data, image_id=None, key="", proxies={}):
+  def __init__(self, data, image_id=None, key="", search_params={}, proxies={}):
     self.proxies = proxies
-    self.key = key # needed for checking my:***
+    self.key = key if key else search_params['key'] # needed for checking my:***
+    self._params = search_params
     if data is None and image_id:
       self._data = data = get_image_data(image_id, proxies=proxies)
     else:
@@ -170,7 +171,7 @@ class Image(object):
     """
     Checking image in my:upvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:upvotes']}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': (f'id:{self.id}','my:upvotes')}, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -180,7 +181,7 @@ class Image(object):
     """
     Checking image in my:downvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:downvotes']}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': (f'id:{self.id}','my:downvotes')}, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -190,7 +191,7 @@ class Image(object):
     """
     Checking image in my:uploads.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:uploads']}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': (f'id:{self.id}','my:uploads')}, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -200,7 +201,7 @@ class Image(object):
     """
     Checking image in my:faves.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:faves']}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -210,15 +211,32 @@ class Image(object):
     """
     Checking image in my:watches.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': [f'id:{self.id}','my:faves']}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1, 'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
     for img in images:
       return True
     return False
-
-  @property
-  def width(self):
-    return self.data["width"]
-
-  @property
-  def height(self):
-    return self.data["height"]
+  
+  def next(self):
+    """
+    Get next Image in Search().
+    """
+    parameters = {**self._params, 'per_page': 1, 'sf': 'created_at'}
+    parameters['q'] = parameters['q'] | {f'id.lt:{self.id}'}
+    data = request_image(parameters, proxies=self.proxies)
+    try:
+      return Image(next(data), search_params={**self._params, 'key': self.key if self.key else self._params['key']}, proxies=self.proxies)
+    except StopIteration:
+      return self
+  
+  def prev(self):
+    """
+    Get previous Image in Search().
+    """
+    parameters = {**self._params, 'per_page': 1, 'sf': 'created_at'}
+    parameters['q'] = parameters['q'] | {f'id.gt:{self.id}'}
+    parameters['sd'] = 'desc' if self._params['sd']=='asc' else 'asc'
+    data = request_image(parameters, proxies=self.proxies)
+    try:
+      return Image(next(data), search_params={**self._params, 'key': self.key if self.key else self._params['key']}, proxies=self.proxies)
+    except StopIteration:
+      return self

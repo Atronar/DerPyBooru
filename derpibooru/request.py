@@ -25,6 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from requests import get, codes
+from urllib.parse import urlencode
 from .helpers import format_params, join_params
 
 __all__ = [
@@ -34,8 +35,6 @@ __all__ = [
   "get_image_data",
   "set_limit"
 ]
-
-from urllib.parse import urlencode
 
 def url(params):
   p = format_params(params)
@@ -100,6 +99,12 @@ def get_image_faves(id_number, proxies={}):
     data = [useritem.rsplit('">',1)[-1] for useritem in data]
     return data
 
+def url_related(id_number, params):
+  p = format_params(params)
+  url = f"https://derpibooru.org/images/{id_number}/related?{urlencode(p)}"
+
+  return url
+
 def request_related(id_number, params, proxies={}):
   search, p = f"https://www.derpibooru.org/images/{id_number}/related.json", format_params(params)
   request = get(search, params=p, proxies=proxies)
@@ -107,6 +112,7 @@ def request_related(id_number, params, proxies={}):
   while request.status_code == codes.ok:
     images, image_count = request.json()["images"], 0
     for image in images:
+      image['view_url'] = image['image']
       yield image
       image_count += 1
     if image_count < 50:

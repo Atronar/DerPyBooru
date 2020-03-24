@@ -24,7 +24,7 @@ __author__ = "Joshua Stone"
 __license__ = "Simplified BSD Licence"
 __copyright__ = "Copyright (c) 2014, Joshua Stone"
 
-from .search import Search
+from .search import Search, Related
 from .image import Image
 from .comments import Comments
 from .comment import Comment
@@ -33,7 +33,7 @@ from .sort import sort
 from .user import user
 
 __all__ = [
-  "Search",
+  "Search", "Related",
   "Image",
   "Comments",
   "Comment"

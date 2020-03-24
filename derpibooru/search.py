@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_images, url
+from .request import get_images, url, get_related, url_related
 from .image import Image
 from .helpers import tags, api_key, sort_format, join_params, user_option, set_limit, validate_filter
 
@@ -84,7 +84,7 @@ class Search(object):
 
     https://derpibooru.org/search?sd=desc&sf=created_at&q=%2A
     """
-    return url(self._params)
+    return url(self.parameters)
 
   def key(self, key=""):
     """
@@ -155,9 +155,9 @@ class Search(object):
     Set whether to filter by a user's faves list. Options available are
     user.ONLY, user.NOT, and None; default is None.
     """
-    if self._params["key"] and option is user.ONLY:
+    if self.parameters["key"] and option is user.ONLY:
        query = self.query_remove("-my:faves").query_append("my:faves")
-    elif self._params["key"] and option is user.NOT:
+    elif self.parameters["key"] and option is user.NOT:
        query = self.query_remove("my:faves").query_append("-my:faves")
     else:
        query = self.query_remove("my:faves").query_remove("-my:faves")
@@ -168,9 +168,9 @@ class Search(object):
     Set whether to filter by a user's upvoted list. Options available are
     user.ONLY, user.NOT, and None; default is None.
     """
-    if self._params["key"] and option is user.ONLY:
+    if self.parameters["key"] and option is user.ONLY:
        query = self.query_remove("-my:upvotes").query_append("my:upvotes")
-    elif self._params["key"] and option is user.NOT:
+    elif self.parameters["key"] and option is user.NOT:
        query = self.query_remove("my:upvotes").query_append("-my:upvotes")
     else:
        query = self.query_remove("my:upvotes").query_remove("-my:upvotes")
@@ -181,9 +181,9 @@ class Search(object):
     Set whether to filter by a user's uploads list. Options available are
     user.ONLY, user.NOT, and None; default is None.
     """
-    if self._params["key"] and option is user.ONLY:
+    if self.parameters["key"] and option is user.ONLY:
        query = self.query_remove("-my:uploads").query_append("my:uploads")
-    elif self._params["key"] and option is user.NOT:
+    elif self.parameters["key"] and option is user.NOT:
        query = self.query_remove("my:uploads").query_append("-my:uploads")
     else:
        query = self.query_remove("my:uploads").query_remove("-my:uploads")
@@ -194,9 +194,9 @@ class Search(object):
     Set whether to filter by a user's watchlist. Options available are
     user.ONLY, user.NOT, and None; default is None.
     """
-    if self._params["key"] and option is user.ONLY:
+    if self.parameters["key"] and option is user.ONLY:
        query = self.query_remove("-my:watched").query_append("my:watched")
-    elif self._params["key"] and option is user.NOT:
+    elif self.parameters["key"] and option is user.NOT:
        query = self.query_remove("my:watched").query_append("-my:watched")
     else:
        query = self.query_remove("my:watched").query_remove("-my:watched")
@@ -206,7 +206,7 @@ class Search(object):
      """
      Returns search for Trending Images from front page.
      """
-     return self.sort_by(sort.SCORE).query('first_seen_at.gt:3 days ago')
+     return self.query('first_seen_at.gt:3 days ago').sort_by(sort.SCORE)
   
   # ids - list of int
   def exclude_by_id(self,*ids):
@@ -219,7 +219,7 @@ class Search(object):
      """
      Adds tags to current search.
      """
-     query = self._params['q'].union(q)
+     query = self.parameters['q'].union(q)
      params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
 
      return self.__class__(**params)
@@ -228,26 +228,25 @@ class Search(object):
      """
      Removes tags from current search.
      """
-     query = self._params['q'].difference(q)
+     query = self.parameters['q'].difference(q)
      params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
 
      return self.__class__(**params)
-  
-  def is_upvoted(self,img_id):
-     """
-     Check image upvote.
-     """
-     up = []
-     for img in self.filter(56027).limit(1).query(f'id:{img_id}','my:upvotes'):
-        up.append(img)
-     if len(up):
-        return True;
-     else:
-        return False;
+
+  def get_related(self,image):
+    if isinstance(image,Image):
+      return Related(image, key=self.parameters['key'], limit=self._limit, \
+                     filter_id=self.parameters['filter_id'], per_page=self.parameters['per_page'], \
+                     proxies=self.proxies)
+    else:
+      return Related(Image(None, image_id=image, proxies=self.proxies), \
+                     key=self.parameters['key'], limit=self._limit, \
+                     filter_id=self.parameters['filter_id'], per_page=self.parameters['per_page'], \
+                     proxies=self.proxies)
 
   def get_page(self,page):
     """
-    Set returned page of search.
+    Set page for gets result of search.
     """
     params = join_params(self.parameters, {"page": set_limit(page), "proxies": self.proxies})
 
@@ -266,4 +265,89 @@ class Search(object):
     """
     Returns a result wrapped in a new instance of Image().
     """
-    return Image(next(self._search), key=self._params["key"], proxies=self.proxies)
+    return Image(next(self._search), search_params=self.parameters, proxies=self.proxies)
+
+class Related(Search):
+  """
+  Related() is the Search-like interface based on related images instead query.
+  Related images gets with old API in JSON and with new API in Web.
+  This class should returns Search() for any query-like actions.
+  """
+  def __init__(self, image, key="", limit=50,
+               filter_id="", per_page=25, proxies={}):
+    """
+    By default initializes with the parameters to get the first 25 related images.
+    """
+    if proxies:
+      self.proxies = proxies
+    else:
+      self.proxies = image.proxies
+    self.image = image
+    self._params = {
+      "key": api_key(key) if key else api_key(image._params['key']),
+      "filter_id": validate_filter(filter_id),
+      "perpage": set_limit(per_page)
+    }
+    self._limit = set_limit(limit)
+    self._search = get_related(self.image.id, self._params, self._limit, proxies=self.proxies)
+
+  @property
+  def url(self):
+    """
+    Returns a search URL built on set parameters. Example based on default
+    parameters:
+
+    https://derpibooru.org/images/***/related?key=&filter_id=&per_page=25
+    """
+    return url_related(self.image.id, self.parameters)
+
+  def query(self, *q):
+    """
+    Takes one or more strings for searching by tag and/or metadata.
+    """
+    params = join_params(self.parameters, {"q": q, "proxies": self.proxies})
+    return Search(**params)
+
+  def sort_by(self, sf):
+    """
+    Related() can't be sorted.
+    """
+    return self
+
+  def descending(self):
+    """
+    Related() can't be sorted.
+    """
+    return self
+
+  def ascending(self, sd="asc"):
+    """
+    Related() can't be sorted.
+    """
+    return self
+  
+  def query_append(self,*q):
+    """
+    Synonyme of query() for Related().
+    """
+    return self.query(q)
+
+  def query_remove(self,*q):
+    """
+    Nothing remove from Related().
+    """
+    return self
+
+  def get_page(self,page):
+    """
+    Related() hasn't pages.
+    """
+    return self
+
+  def per_page(self,limit):
+    """
+    Unlike Search(), Related() use perpage instead per_page.
+    """
+    params = join_params(self.parameters, {"perpage": set_limit(limit), "proxies": self.proxies})
+
+    return self.__class__(**params)
