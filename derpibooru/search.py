@@ -41,16 +41,20 @@ class Search(object):
   interactions predictable as well as making versioning of searches relatively
   easy.
   """
-  def __init__(self, key="", q=set(), sf="created_at", sd="desc", limit=50,
-               faves="", upvotes="", uploads="", watched="", filter_id="",
-               per_page=25, page=1, proxies={}):
+  def __init__(self, key="", q=set(), sf="created_at", sd="desc",
+               limit=50, faves="", upvotes="", uploads="", watched="",
+               filter_id="", per_page=25, page=1,
+               reverse_url="", distance=0.25, proxies={}):
     """
     By default initializes an instance of Search with the parameters to get
     the first 25 images on Derpibooru's front page.
+    For reverse searching by image use reverse_url field.
     """
     self.proxies = proxies
     self._params = {
       "key": api_key(key),
+      "reverse_url": reverse_url,
+      "distance": set_distance(distance),
       "q": tags(q),
       "sf": sort_format(sf),
       "sd": sd,
@@ -58,6 +62,36 @@ class Search(object):
       "per_page": set_limit(per_page),
       "page": set_limit(page)
     }
+
+    if faves:
+      if self._params["key"] and faves is user.ONLY:
+         self._params["q"] -= {"-my:faves"}
+         self._params["q"] |= {"my:faves"}
+      elif self._params["key"] and faves is user.NOT:
+         self._params["q"] -= {"my:faves"}
+         self._params["q"] |= {"-my:faves"}
+    if upvotes:
+      if self._params["key"] and upvotes is user.ONLY:
+         self._params["q"] -= {"-my:upvotes"}
+         self._params["q"] |= {"my:upvotes"}
+      elif self._params["key"] and upvotes is user.NOT:
+         self._params["q"] -= {"my:upvotes"}
+         self._params["q"] |= {"-my:upvotes"}
+    if uploads:
+      if self._params["key"] and uploads is user.ONLY:
+         self._params["q"] -= {"-my:uploads"}
+         self._params["q"] |= {"my:uploads"}
+      elif self._params["key"] and uploads is user.NOT:
+         self._params["q"] -= {"my:uploads"}
+         self._params["q"] |= {"-my:uploads"}
+    if watched:
+      if self._params["key"] and watched is user.ONLY:
+         self._params["q"] -= {"-my:watched"}
+         self._params["q"] |= {"my:watched"}
+      elif self._params["key"] and watched is user.NOT:
+         self._params["q"] -= {"my:watched"}
+         self._params["q"] |= {"-my:watched"}
+      
     self._limit = set_limit(limit)
     self._search = get_images(self._params, self._limit, proxies=self.proxies)
   
@@ -261,6 +295,22 @@ class Search(object):
 
     return self.__class__(**params)
 
+  def reverse(self,url):
+    """
+    Takes an url image for reverse search.
+    """
+    params = join_params(self.parameters, {"reverse_url": url, "proxies": self.proxies})
+
+    return self.__class__(**params)
+
+  def distance(self,distance):
+    """
+    Match distance for reverse search (suggested values: between 0.2 and 0.5)
+    """
+    params = join_params(self.parameters, {"distance": set_distance(distance), "proxies": self.proxies})
+
+    return self.__class__(**params)
+
   def __next__(self):
     """
     Returns a result wrapped in a new instance of Image().
@@ -297,7 +347,7 @@ class Related(Search):
     Returns a search URL built on set parameters. Example based on default
     parameters:
 
-    https://derpibooru.org/images/***/related?key=&filter_id=&per_page=25
+    https://derpibooru.org/images/***/related?key=&filter_id=&perpage=25
     """
     return url_related(self.image.id, self.parameters)
 
@@ -351,3 +401,17 @@ class Related(Search):
     params = join_params(self.parameters, {"perpage": set_limit(limit), "proxies": self.proxies})
 
     return self.__class__(**params)
+
+  def reverse(self,url):
+    """
+    Takes an url image for reverse search.
+    """
+    params = join_params(self.parameters, {"reverse_url": url, "proxies": self.proxies})
+
+    return Search(**params)
+
+  def distance(self,distance):
+    """
+    It hasn't any sense in Related()
+    """
+    return self

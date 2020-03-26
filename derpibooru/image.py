@@ -39,12 +39,15 @@ class Image(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   For getting image by id field data should be None and image_id contains id.
+  For getting current featured image field data should be None and image_id="featured"
   API key need for checking my:***
   """
   def __init__(self, data, image_id=None, key="", search_params={}, proxies={}):
     self.proxies = proxies
     self.key = key if key else search_params['key'] # needed for checking my:***
     self._params = search_params
+
+    # Set image_id="featured" for get current featured image
     if data is None and image_id:
       self._data = data = get_image_data(image_id, proxies=proxies)
     else:

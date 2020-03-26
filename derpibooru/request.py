@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from requests import get, codes
+from requests import get, post, codes
 from urllib.parse import urlencode
 from .helpers import format_params, join_params
 
@@ -42,9 +42,15 @@ def url(params):
 
   return url
 
-def request(params,proxies={}):
-  search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
-  request = get(search, params=p, proxies=proxies)
+def request(params, proxies={}):
+  if "reverse_url" in params:
+    search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
+    p = {i:p[i] for i in p if i in ('url','distance')}
+    request = post(search, params=p, proxies=proxies)
+  else:
+    search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
+    p = {i:p[i] for i in p if i not in ('url','distance')}
+    request = get(search, params=p, proxies=proxies)
 
   while request.status_code == codes.ok:
     images, image_count = request.json()["images"], 0
@@ -74,6 +80,7 @@ def get_images(params, limit=50, proxies={}):
       yield image
 
 def get_image_data(id_number, proxies={}):
+  """id_number can be featured"""
   url = f"https://derpibooru.org/api/v1/json/images/{id_number}"
 
   request = get(url, proxies=proxies)

@@ -121,4 +121,14 @@ for post in Search().key(key).watched(user.ONLY):
 
 - Only python >=3.6
 - Available using proxies 
-- Extended Search and Image (like paging, getting top, ratings etc.)
+- Extended Search and Image (like paging, getting top, ratings, reverse search etc.)
+- Getting Image data by id:
+  i_want_ponies_ponified = Image(None,image_id=0)
+  print(i_want_ponies_ponified.url)
+- Getting comments:
+  for image in Search():
+    for comment in image.comments:
+      print(f"{comment.author}: {comment.body}")
+  And by id:
+  which_video = Comment(None, id_comment=1000)
+    print("Comment from",which_video.image_id)

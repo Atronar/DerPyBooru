@@ -131,11 +131,10 @@ def format_params(params):
   p = {}
 
   for key, value in params.items():
-    if key == "key":
-      if value:
-        p["key"] = value
-    elif key == "q":
+    if key == "q":
       p["q"] = ",".join(value) if value else "*"
+    elif key == "reverse_url" and value:
+      p["url"] = value
     elif value:
       p[key] = value
 
@@ -155,3 +154,16 @@ def set_limit(limit):
 
   return l
 
+def set_distance(distance):
+  if distance:
+    try:
+      d = float(distance)
+      if d < 0.2:
+        d = 0.2
+      elif d >= 1:
+        d = 0.5
+    except:
+      d = 0.25
+  else:
+    d = 0.25
+  return d
