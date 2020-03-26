@@ -58,19 +58,3 @@ class Comment(object):
     if data:
       self._data = data
 
-  @property
-  def author(self):
-    return self.data["author"]
-
-  @property
-  def body(self):
-    return self.data["body"]
-
-  @property
-  def image_id(self):
-    return self.data["image_id"]
-
-  @property
-  def user_id(self):
-    return self.data["user_id"]
-

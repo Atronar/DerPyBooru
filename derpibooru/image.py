@@ -24,9 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from re import sub
 from .request import get_image_data, get_image_faves, request as request_image
-from .comment import Comment
 from .comments import Comments
 
 __all__ = [
@@ -44,7 +42,13 @@ class Image(object):
   """
   def __init__(self, data, image_id=None, key="", search_params={}, proxies={}):
     self.proxies = proxies
-    self.key = key if key else search_params['key'] # needed for checking my:***
+    # key needed for checking my:***
+    if key:
+      self.key = key if key else search_params['key']
+    elif 'key' in search_params:
+      self.key = search_params['key']
+    else:
+      self.key = ""
     self._params = search_params
 
     # Set image_id="featured" for get current featured image
@@ -119,7 +123,6 @@ class Image(object):
 
     return self._data[faved_by]
 
-  @property
   def comments(self):
     # filter_id used to get comments for any image
     return Comments(filter_id=56027, proxies=self.proxies).image_id(self.id)

@@ -26,7 +26,7 @@
 
 from .request import get_comments, url_comments
 from .comment import Comment
-from .helpers import search_comments_fields, api_key, sort_format, join_params, user_option, set_limit, validate_filter
+from .helpers import search_comments_fields, api_key, join_params, set_limit, validate_filter
 
 __all__ = [
   "Comments"

@@ -82,16 +82,36 @@ class Comparable(Query_Field):
 
 class Query(object):
   def __init__(self):
-    for field in ["description", "faved_by", "my", "source_url",
-                  "orig_sha512_hash", "sha512_hash", "uploader"]:
+    for field in {"alias_of", "aliased", "aliases", "analyzed_name", "author",
+                  "body", "category", "description", "faved_by", "implied_by",
+                  "implies", "my", "name", "name_in_namespace", "namespace",
+                  "short_description", "slug", "source_url", "orig_sha512_hash",
+                  "sha512_hash", "uploader"}:
       setattr(self, field, Equal(field))
 
-    for field in ["aspect_ratio", "comment_count", "created_at", "downvotes",
-                  "faves", "height", "id", "score", "tag_count", "upvotes",
-                  "width", "wilson_score"]:
+    for field in {"aspect_ratio", "comment_count", "created_at", "downvotes",
+                  "faves", "height", "id", "image_id", "images", "score",
+                  "tag_count", "upvotes", "user_id", "width", "wilson_score"}:
       setattr(self, field, Comparable(field))
 
   def __neg__(self):
     return self.__class__()
+
+  @property
+  def images_attr(self):
+    return ("aspect_ratio", "comment_count", "created_at", "description",
+            "downvotes", "faved_by", "faves", "height", "id", "my", "source_url",
+            "orig_sha512_hash", "score", "sha512_hash", "tag_count", "uploader",
+            "upvotes", "width", "wilson_score")
+
+  @property
+  def comments_attr(self):
+    return ("author", "body", "created_at", "id", "image_id", "my", "user_id")
+
+  @property
+  def tags_attr(self):
+    return ("alias_of", "aliased", "aliases", "analyzed_name", "category",
+            "description", "id", "images", "implied_by", "implies", "name",
+            "name_in_namespace", "namespace", "short_description", "slug")
 
 query = Query()

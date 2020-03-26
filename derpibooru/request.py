@@ -26,7 +26,7 @@
 
 from requests import get, post, codes
 from urllib.parse import urlencode
-from .helpers import format_params, join_params
+from .helpers import format_params
 
 __all__ = [
   "url",
@@ -203,3 +203,54 @@ def get_comment_data(id_number, proxies={}):
     data = request.json()
 
     return data["comment"]
+
+def url_tags(params):
+  p = format_params(params)
+  p["tq"]=p["q"]
+  del(p["q"])
+  url = f"https://derpibooru.org/tags?{urlencode(p)}"
+
+  return url
+
+def tags_requests(params, limit=50, proxies={}):
+  search, p = "https://derpibooru.org/api/v1/json/search/tags", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    comments, comment_count = request.json()["tags"], 0
+    for comment in comments:
+      yield comment
+      comment_count += 1
+    if comment_count < 50:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_tags(parameters, limit=50, proxies={}):
+  params = parameters
+
+  if limit is not None:
+    l = limit
+    if l > 0:
+      r, counter = tags_requests(params, proxies=proxies), 0
+
+      for index, comment in enumerate(r, start=1):
+        yield comment
+        if index >= l:
+          break
+  else:
+    r = tags_requests(params, proxies=proxies)
+    for comment in r:
+      yield comment
+
+def get_tag_data(tag, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/tags/{tag}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+
+    return data["tag"]

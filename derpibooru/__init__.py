@@ -28,6 +28,8 @@ from .search import Search, Related
 from .image import Image
 from .comments import Comments
 from .comment import Comment
+from .tags import Tags
+from .tag import Tag
 from .query import query
 from .sort import sort
 from .user import user
@@ -36,7 +38,9 @@ __all__ = [
   "Search", "Related",
   "Image",
   "Comments",
-  "Comment"
+  "Comment",
+  "Tags",
+  "Tag",
   "query",
   "sort",
   "user"

@@ -24,12 +24,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from urllib.parse import quote_plus
+
 __all__ = [
   "tags",
+  "search_comments_fields",
   "api_key",
+  "validate_filter",
   "sort_format",
+  "user_option",
   "format_params",
-  "join_params"
+  "join_params",
+  "set_limit",
+  "set_distance"
 ]
 
 from .sort import sort
@@ -61,19 +68,19 @@ def search_comments_fields(q, author="", body="", created_at="", comment_id="", 
       tag = str(tag).strip()
       if tag.startswith("author:"):
         if not author:
-          author = tag.split("author:",1)[-1]
+          author = tag.replace("author:","",1)
       elif tag.startswith("created_at:"):
         if not created_at:
-          created_at = tag.split("created_at:",1)[-1]
+          created_at = tag.replace("created_at:","",1)
       elif tag.startswith("comment_id:"):
         if not comment_id:
-          comment_id = tag.split("comment_id:",1)[-1]
+          comment_id = tag.replace("comment_id:","",1)
       elif tag.startswith("image_id:"):
         if not image_id:
-          image_id = tag.split("image_id:",1)[-1]
+          image_id = tag.replace("image_id:","",1)
       elif tag.startswith("user_id:"):
         if not user_id:
-          user_id = tag.split("user_id:",1)[-1]
+          user_id = tag.replace("user_id:","",1)
       elif tag.startswith("-my:"): # -my:comments
         if my is None: 
           if tag is "-my:comments":
@@ -167,3 +174,22 @@ def set_distance(distance):
   else:
     d = 0.25
   return d
+
+def slugging_tag(tag):
+  slug = tag.strip().lower()
+  do_slug = False
+  for char in slug:
+    if char in '/\\:.+ ':
+      do_slug = True
+      break
+  if not do_slug and '-' in slug:
+    for char in ('-dash-','-fwslash','-bwslash-','-colon-','-dot-','-plus-','stop'):
+      if char in slug and char is not 'stop':
+        break
+      elif char is 'stop':
+        do_slug = True
+  if do_slug:
+    for i,j in {'-':'-dash-', '/':'-fwslash', '\\':'-bwslash-', ':':'-colon-', '.':'-dot-', '+':'-plus-'}.items():
+      slug = slug.replace(i,j)
+    slug = quote_plus(slug)
+  return slug

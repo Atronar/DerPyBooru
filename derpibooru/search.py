@@ -26,7 +26,8 @@
 
 from .request import get_images, url, get_related, url_related
 from .image import Image
-from .helpers import tags, api_key, sort_format, join_params, user_option, set_limit, validate_filter
+from .helpers import tags, api_key, sort_format, join_params, user_option, set_limit, \
+                     validate_filter, set_distance
 
 __all__ = [
   "Search"
