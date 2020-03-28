@@ -67,31 +67,31 @@ class Search(object):
     if faves:
       if self._params["key"] and faves is user.ONLY:
          self._params["q"] -= {"-my:faves"}
-         self._params["q"] |= {"my:faves"}
+         self._params["q"].add("my:faves")
       elif self._params["key"] and faves is user.NOT:
          self._params["q"] -= {"my:faves"}
-         self._params["q"] |= {"-my:faves"}
+         self._params["q"].add("-my:faves")
     if upvotes:
       if self._params["key"] and upvotes is user.ONLY:
          self._params["q"] -= {"-my:upvotes"}
-         self._params["q"] |= {"my:upvotes"}
+         self._params["q"].add("my:upvotes")
       elif self._params["key"] and upvotes is user.NOT:
          self._params["q"] -= {"my:upvotes"}
-         self._params["q"] |= {"-my:upvotes"}
+         self._params["q"].add("-my:upvotes")
     if uploads:
       if self._params["key"] and uploads is user.ONLY:
          self._params["q"] -= {"-my:uploads"}
-         self._params["q"] |= {"my:uploads"}
+         self._params["q"].add("my:uploads")
       elif self._params["key"] and uploads is user.NOT:
          self._params["q"] -= {"my:uploads"}
-         self._params["q"] |= {"-my:uploads"}
+         self._params["q"].add("-my:uploads")
     if watched:
       if self._params["key"] and watched is user.ONLY:
          self._params["q"] -= {"-my:watched"}
-         self._params["q"] |= {"my:watched"}
+         self._params["q"].add("my:watched")
       elif self._params["key"] and watched is user.NOT:
          self._params["q"] -= {"my:watched"}
-         self._params["q"] |= {"-my:watched"}
+         self._params["q"].add("-my:watched")
       
     self._limit = set_limit(limit)
     self._search = get_images(self._params, self._limit, proxies=self.proxies)

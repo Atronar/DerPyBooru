@@ -47,6 +47,7 @@ def request(params, proxies={}):
     search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
     p = {i:p[i] for i in p if i in ('url','distance')}
     request = post(search, params=p, proxies=proxies)
+    p["per_page"] = 50
   else:
     search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
     p = {i:p[i] for i in p if i not in ('url','distance')}
@@ -57,7 +58,7 @@ def request(params, proxies={}):
     for image in images:
       yield image
       image_count += 1
-    if image_count < 50:
+    if image_count < p["per_page"]:
       break
 
     p["page"] += 1
@@ -68,12 +69,9 @@ def get_images(params, limit=50, proxies={}):
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = request(params, proxies=proxies), 0
-
+      r = request(params, proxies=proxies)
       for index, image in enumerate(r, start=1):
         yield image
-        if index >= l:
-          break
   else:
     r = request(params, proxies=proxies)
     for image in r:
@@ -122,7 +120,7 @@ def request_related(id_number, params, proxies={}):
       image['view_url'] = image['image']
       yield image
       image_count += 1
-    if image_count < 50:
+    if image_count < p["per_page"]:
       break
 
     p["page"] += 1
@@ -133,12 +131,9 @@ def get_related(id_number, params, limit=50, proxies={}):
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = request_related(id_number, params, proxies=proxies), 0
-
+      r = request_related(id_number, params, proxies=proxies)
       for index, image in enumerate(r, start=1):
         yield image
-        if index >= l:
-          break
   else:
     r = request_related(id_number, params, proxies=proxies)
     for image in r:
@@ -161,7 +156,7 @@ def url_comments(params):
 
   return url
 
-def comments_requests(params, limit=50, proxies={}):
+def comments_requests(params, proxies={}):
   search, p = "https://derpibooru.org/api/v1/json/search/comments", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
@@ -170,7 +165,7 @@ def comments_requests(params, limit=50, proxies={}):
     for comment in comments:
       yield comment
       comment_count += 1
-    if comment_count < 50:
+    if comment_count < p["per_page"]:
       break
 
     p["page"] += 1
@@ -183,12 +178,9 @@ def get_comments(parameters, limit=50, proxies={}):
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = comments_requests(params, proxies=proxies), 0
-
+      r = comments_requests(params, proxies=proxies)
       for index, comment in enumerate(r, start=1):
         yield comment
-        if index >= l:
-          break
   else:
     r = comments_requests(params, proxies=proxies)
     for comment in r:
@@ -212,16 +204,16 @@ def url_tags(params):
 
   return url
 
-def tags_requests(params, limit=50, proxies={}):
+def tags_requests(params, proxies={}):
   search, p = "https://derpibooru.org/api/v1/json/search/tags", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
   while request.status_code == codes.ok:
-    comments, comment_count = request.json()["tags"], 0
-    for comment in comments:
-      yield comment
-      comment_count += 1
-    if comment_count < 50:
+    tags, tag_count = request.json()["tags"], 0
+    for tag in tags:
+      yield tag
+      tag_count += 1
+    if tag_count < p["per_page"]:
       break
 
     p["page"] += 1
@@ -230,20 +222,16 @@ def tags_requests(params, limit=50, proxies={}):
 
 def get_tags(parameters, limit=50, proxies={}):
   params = parameters
-
   if limit is not None:
     l = limit
     if l > 0:
-      r, counter = tags_requests(params, proxies=proxies), 0
-
-      for index, comment in enumerate(r, start=1):
-        yield comment
-        if index >= l:
-          break
+      r = tags_requests(params, proxies=proxies)
+      for index, tag in enumerate(r, start=1):
+        yield tag
   else:
     r = tags_requests(params, proxies=proxies)
-    for comment in r:
-      yield comment
+    for tag in r:
+      yield tag
 
 def get_tag_data(tag, proxies={}):
   url = f"https://derpibooru.org/api/v1/json/tags/{tag}"
