@@ -142,6 +142,9 @@ def format_params(params):
       p["q"] = ",".join(value) if value else "*"
     elif key == "reverse_url" and value:
       p["url"] = value
+    elif key == "distance":
+      if "reverse_url" in params and params["reverse_url"]:
+        p[key] = value
     elif value:
       p[key] = value
 

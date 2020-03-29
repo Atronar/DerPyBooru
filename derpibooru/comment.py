@@ -42,7 +42,14 @@ class Comment(object):
         setattr(self, field, body)
 
   def __str__(self):
-    return f'''Comment({self.id}: "{self.body[:27]+'...' if len(self.body)>30 else self.body}")'''
+    if self.author:
+      return '''Comment({}: "{}")'''.format(self.id,
+                                            self.body.strip().split('\n',1)[0][:27]+'...' \
+                                              if len(self.body)>30 \
+                                              else self.body.strip().split('\n',1)[0]
+                                           )
+    else:
+      return f'''Deleted comment({self.id} in image {self.image_id})'''
 
   @property
   def data(self):

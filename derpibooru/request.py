@@ -43,7 +43,7 @@ def url(params):
   return url
 
 def request(params, proxies={}):
-  if "reverse_url" in params:
+  if "reverse_url" in params and params["reverse_url"]:
     search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
     p = {i:p[i] for i in p if i in ('url','distance')}
     request = post(search, params=p, proxies=proxies)
@@ -67,11 +67,12 @@ def request(params, proxies={}):
 
 def get_images(params, limit=50, proxies={}):
   if limit is not None:
-    l = limit
-    if l > 0:
+    if limit > 0:
       r = request(params, proxies=proxies)
       for index, image in enumerate(r, start=1):
         yield image
+        if index >= limit:
+          break
   else:
     r = request(params, proxies=proxies)
     for image in r:
@@ -129,24 +130,16 @@ def request_related(id_number, params, proxies={}):
 
 def get_related(id_number, params, limit=50, proxies={}):
   if limit is not None:
-    l = limit
-    if l > 0:
+    if limit > 0:
       r = request_related(id_number, params, proxies=proxies)
       for index, image in enumerate(r, start=1):
         yield image
+        if index >= limit:
+          break
   else:
     r = request_related(id_number, params, proxies=proxies)
     for image in r:
       yield image
-
-def get_user_id_by_name(username, proxies={}):
-  url = f"https://derpibooru.org/profiles/{username.replace(' ','+')}"
-
-  request = get(url, proxies=proxies)
-
-  profile_data = request.text
-  user_id = profile_data.split("/conversations?with=",1)[-1].split('">',1)[0]
-  return user_id
 
 def url_comments(params):
   p = format_params(params)
@@ -176,11 +169,12 @@ def get_comments(parameters, limit=50, proxies={}):
   params = parameters
 
   if limit is not None:
-    l = limit
-    if l > 0:
+    if limit > 0:
       r = comments_requests(params, proxies=proxies)
       for index, comment in enumerate(r, start=1):
         yield comment
+        if index >= limit:
+          break
   else:
     r = comments_requests(params, proxies=proxies)
     for comment in r:
@@ -223,11 +217,12 @@ def tags_requests(params, proxies={}):
 def get_tags(parameters, limit=50, proxies={}):
   params = parameters
   if limit is not None:
-    l = limit
-    if l > 0:
+    if limit > 0:
       r = tags_requests(params, proxies=proxies)
       for index, tag in enumerate(r, start=1):
         yield tag
+        if index >= limit:
+          break
   else:
     r = tags_requests(params, proxies=proxies)
     for tag in r:
@@ -242,3 +237,22 @@ def get_tag_data(tag, proxies={}):
     data = request.json()
 
     return data["tag"]
+
+def get_user_id_by_name(username, proxies={}):
+  url = f"https://derpibooru.org/profiles/{username.replace(' ','+')}"
+
+  request = get(url, proxies=proxies)
+
+  profile_data = request.text
+  user_id = profile_data.split("/conversations?with=",1)[-1].split('">',1)[0]
+  return user_id
+
+def get_user_data(user_id, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/profiles/{user_id}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+
+    return data["user"]

@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_tag_data
+from .request import get_tag_data, get_tags
 from .helpers import slugging_tag
 
 __all__ = [
@@ -32,16 +32,19 @@ __all__ = [
 ]
 
 class Tag(object):
-  def __init__(self, data, tag=None, slug=False, proxies={}):
+  def __init__(self, data, tag=None, slug=False, tag_id=None, proxies={}):
     """
     tag field is slug.
     """
     self.proxies = proxies
-    if data is None and tag:
-      if slug:
-        self._data = data = get_tag_data(tag, proxies=proxies)
-      else:
-        self._data = data = get_tag_data(slugging_tag(tag), proxies=proxies)
+    if data is None and (tag or tag_id):
+      if tag:
+        if slug:
+          self._data = data = get_tag_data(tag, proxies=proxies)
+        else:
+          self._data = data = get_tag_data(slugging_tag(tag), proxies=proxies)
+      elif tag_id:
+          self._data = data = next(get_tags({"q": (f"id:{tag_id}",), "per_page":1}, 1, proxies=proxies))
     else:
       self._data = data
     for field, body in self.data.items():

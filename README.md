@@ -133,3 +133,4 @@ for post in Search().key(key).watched(user.ONLY):
   which_video = Comment(None, id_comment=1000)
     print("Comment from",which_video.image_id)
 - Work with tags: category, alliaces, implies, etc.
+- Getting profiles

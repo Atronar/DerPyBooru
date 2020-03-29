@@ -30,6 +30,7 @@ from .comments import Comments
 from .comment import Comment
 from .tags import Tags
 from .tag import Tag
+from .profile import Profile
 from .query import query
 from .sort import sort
 from .user import user
@@ -41,6 +42,7 @@ __all__ = [
   "Comment",
   "Tags",
   "Tag",
+  "Profile",
   "query",
   "sort",
   "user"
