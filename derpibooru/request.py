@@ -256,3 +256,44 @@ def get_user_data(user_id, proxies={}):
     data = request.json()
 
     return data["user"]
+
+def filters_requests(filter_id, params, proxies={}):
+  search, p = f"https://derpibooru.org/api/v1/json/filters/{filter_id}", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    filters, filter_count = request.json()["filters"], 0
+    for filter_item in filters:
+      yield filter_item
+      filter_count += 1
+    if filter_count < p["per_page"]:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_filters(filter_id, parameters, limit=50, proxies={}):
+  params = parameters
+
+  if limit is not None:
+    if limit > 0:
+      r = filters_requests(filter_id, params, proxies=proxies)
+      for index, filter_item in enumerate(r, start=1):
+        yield filter_item
+        if index >= limit:
+          break
+  else:
+    r = filters_requests(filter_id, params, proxies=proxies)
+    for filter_item in r:
+      yield filter_item
+
+def get_filter_data(filter_id, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/filters/{filter_id}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+
+    return data["filter"]
