@@ -4,7 +4,7 @@ Python bindings for Derpibooru's API
 
 License: **Simplified BSD License**
 
-Version: **0.7**
+Version: **0.8**
 
 ## Features
 
@@ -117,20 +117,27 @@ for post in Search().key(key).watched(user.ONLY):
   print("#{} - score: {:>3} - {}".format(id_number, score, tags))
 ```
 
-## Changed by ATroN
+## Changes in fork
 
 - Only python >=3.6
 - Available using proxies 
 - Extended Search and Image (like paging, getting top, ratings, reverse search, etc.)
 - Getting Image data by id:
+```python
   i_want_ponies_ponified = Image(None,image_id=0)
   print(i_want_ponies_ponified.url)
+```
 - Getting comments:
+```python
   for image in Search():
     for comment in image.comments:
       print(f"{comment.author}: {comment.body}")
+```
   And by id:
+```python
   which_video = Comment(None, id_comment=1000)
     print("Comment from",which_video.image_id)
+```
 - Work with tags: category, alliaces, implies, etc.
 - Getting profiles
+- Getting filters

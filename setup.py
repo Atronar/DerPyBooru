@@ -4,18 +4,18 @@ from setuptools import setup
 from setuptools import find_packages
 
 setup(
-  name = "DerPyBooru",
+  name = "DerPyBooruPhi",
   description = "Python bindings for Derpibooru's API",
   url = "https://github.com/Atronar/DerPyBooru",
-  version = "0.7.2",
-  author = "Joshua Stone",
-  author_email = "joshua.gage.stone@gmail.com",
+  version = "0.8.0",
+  author = "ATroN",
+  author_email = "master.atron@gmail.com",
   license = "Simplified BSD License",
   platforms = ["any"],
   packages = find_packages(),
   install_requires = ["requests"],
   include_package_data = True,
-  download_url = "https://github.com/joshua-stone/DerPyBooru/tarball/0.7.2",
+  #download_url = "https://github.com/joshua-stone/DerPyBooru/tarball/0.7.2",
   classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
