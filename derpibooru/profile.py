@@ -28,6 +28,7 @@ from .request import get_user_data, get_user_id_by_name
 from .tag import Tag
 from .comments import Comments
 from .search import Search
+from .galleries import Galleries
 
 __all__ = [
   "Profile"
@@ -90,6 +91,10 @@ class Profile(object):
     return Search(q=artist_tags, key=key, sf=sf, sd=sd,
                   limit=limit, filter_id=filter_id, per_page=per_page,
                   page=page, proxies=self.proxies)
+
+  def galleries(self, key="", limit=50, per_page=25, page=1):
+    return Galleries(self, key=key, q=(f"user:{self.name}",), limit=limit,
+                     per_page=per_page, page=page, proxies=self.proxies)
 
 class Award(object):
   def __init__(self, data):

@@ -32,6 +32,8 @@ from .tags import Tags
 from .tag import Tag
 from .profile import Profile
 from .filters import Filters, Filter
+from .galleries import Galleries
+from .gallery import Gallery
 from .query import query
 from .sort import sort
 from .user import user
@@ -45,6 +47,8 @@ __all__ = [
   "Tag",
   "Profile",
   "Filters", "Filter",
+  "Galleries",
+  "Gallery",
   "query",
   "sort",
   "user"

@@ -26,7 +26,7 @@
 
 from requests import get, post, codes
 from urllib.parse import urlencode
-from .helpers import format_params
+from .helpers import format_params, format_params_url_galleries
 
 __all__ = [
   "url",
@@ -79,7 +79,7 @@ def get_images(params, limit=50, proxies={}):
       yield image
 
 def get_image_data(id_number, proxies={}):
-  """id_number can be featured"""
+  '''id_number can be "featured"'''
   url = f"https://derpibooru.org/api/v1/json/images/{id_number}"
 
   request = get(url, proxies=proxies)
@@ -112,13 +112,19 @@ def url_related(id_number, params):
   return url
 
 def request_related(id_number, params, proxies={}):
-  search, p = f"https://www.derpibooru.org/images/{id_number}/related.json", format_params(params)
+  search, p = f"https://www.derpibooru.org/images/{id_number}/related", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  # It should be temporary solution, until related returns to API
+  if request.status_code == codes.ok:
+    images = [f"""id:{image.split('"',1)[0]}""" for image in request.text.split('<div class="media-box" data-image-id="')][1:]
+  params['q'] = (" || ".join(images),)
+  search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
   while request.status_code == codes.ok:
     images, image_count = request.json()["images"], 0
     for image in images:
-      image['view_url'] = image['image']
       yield image
       image_count += 1
     if image_count < p["per_page"]:
@@ -165,9 +171,7 @@ def comments_requests(params, proxies={}):
 
     request = get(search, params=p, proxies=proxies)
 
-def get_comments(parameters, limit=50, proxies={}):
-  params = parameters
-
+def get_comments(params, limit=50, proxies={}):
   if limit is not None:
     if limit > 0:
       r = comments_requests(params, proxies=proxies)
@@ -214,8 +218,7 @@ def tags_requests(params, proxies={}):
 
     request = get(search, params=p, proxies=proxies)
 
-def get_tags(parameters, limit=50, proxies={}):
-  params = parameters
+def get_tags(params, limit=50, proxies={}):
   if limit is not None:
     if limit > 0:
       r = tags_requests(params, proxies=proxies)
@@ -273,9 +276,7 @@ def filters_requests(filter_id, params, proxies={}):
 
     request = get(search, params=p, proxies=proxies)
 
-def get_filters(filter_id, parameters, limit=50, proxies={}):
-  params = parameters
-
+def get_filters(filter_id, params, limit=50, proxies={}):
   if limit is not None:
     if limit > 0:
       r = filters_requests(filter_id, params, proxies=proxies)
@@ -297,3 +298,38 @@ def get_filter_data(filter_id, proxies={}):
     data = request.json()
 
     return data["filter"]
+
+def url_galleries(params):
+  p = format_params_url_galleries(params)
+  url = f"https://derpibooru.org/galleries?{urlencode(p)}"
+
+  return url
+
+def galleries_requests(params, proxies={}):
+  search, p = "https://derpibooru.org/api/v1/json/search/galleries", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+  print(format_params(params))
+  while request.status_code == codes.ok:
+    galleries, gallery_count = request.json()["galleries"], 0
+    for gallery in galleries:
+      yield gallery
+      gallery_count += 1
+    if gallery_count < p["per_page"]:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_galleries(params, limit=50, proxies={}):
+  if limit is not None:
+    if limit > 0:
+      r = galleries_requests(params, proxies=proxies)
+      for index, gallery in enumerate(r, start=1):
+        yield gallery
+        if index >= limit:
+          break
+  else:
+    r = galleries_requests(params, proxies=proxies)
+    for gallery in r:
+      yield gallery

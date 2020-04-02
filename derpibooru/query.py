@@ -82,26 +82,38 @@ class Comparable(Query_Field):
 
 class Query(object):
   def __init__(self):
-    for field in {"alias_of", "aliased", "aliases", "analyzed_name", "author",
-                  "body", "category", "description", "faved_by", "implied_by",
-                  "implies", "my", "name", "name_in_namespace", "namespace",
-                  "short_description", "slug", "source_url", "orig_sha512_hash",
-                  "sha512_hash", "uploader"}:
+    for field in self.equal:
       setattr(self, field, Equal(field))
 
-    for field in {"aspect_ratio", "comment_count", "created_at", "downvotes",
-                  "faves", "height", "id", "image_id", "images", "score",
-                  "tag_count", "upvotes", "user_id", "width", "wilson_score"}:
+    for field in self.comparable:
       setattr(self, field, Comparable(field))
 
   def __neg__(self):
     return self.__class__()
 
+  # literal, ngram
+  @property
+  def equal(self):
+    return {"alias_of", "aliased", "aliases", "analyzed_name", "author", "body",
+            "category", "description", "faved_by", "gallery_id", "image_ids",
+            "implied_by", "implies", "my", "name", "name_in_namespace", "namespace",
+            "original_format", "short_description", "slug", "source_url",
+            "orig_sha512_hash", "sha512_hash", "uploader", "watcher_ids"}
+
+  # int, float, date
+  @property
+  def comparable(self):
+    return {"aspect_ratio", "comment_count", "created_at", "downvotes", "faved_by_id",
+            "faves", "first_seen_at", "height", "id", "image_count", "image_id",
+            "images", "score", "tag_count", "updated_at", "uploader_id", "upvotes",
+            "user_id", "watcher_count", "width", "wilson_score"}
+
   @property
   def images_attr(self):
-    return ("aspect_ratio", "comment_count", "created_at", "description",
-            "downvotes", "faved_by", "faves", "height", "id", "my", "source_url",
-            "orig_sha512_hash", "score", "sha512_hash", "tag_count", "uploader",
+    return ("aspect_ratio", "comment_count", "created_at", "description", "downvotes",
+            "faved_by", "faved_by_id", "faves", "first_seen_at", "gallery_id", "height",
+            "id", "my", "source_url", "orig_sha512_hash", "original_format", "score",
+            "sha512_hash", "tag_count", "updated_at", "uploader", "uploader_id",
             "upvotes", "width", "wilson_score")
 
   @property
@@ -113,5 +125,10 @@ class Query(object):
     return ("alias_of", "aliased", "aliases", "analyzed_name", "category",
             "description", "id", "images", "implied_by", "implies", "name",
             "name_in_namespace", "namespace", "short_description", "slug")
+
+  @property
+  def galleries_attr(self):
+    return ("created_at", "description", "id", "image_count", "image_ids", "title",
+            "updated_at", "user", "watcher_count", "watcher_ids")
 
 query = Query()

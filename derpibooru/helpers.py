@@ -150,6 +150,27 @@ def format_params(params):
 
   return p
 
+def format_params_url_galleries(params):
+  p = {}
+
+  for key, value in params.items():
+    if key == "q":
+      q = ",".join(value) if value else "*"
+      q = (i.strip() for i in q.split(","))
+      for tag in q:
+        if tag.startwith("title:"):
+          p["gallery[title]"] = tag[6:]
+        elif tag.startwith("description:"):
+          p["gallery[description]"] = tag[12:]
+        elif tag.startwith("user:"):
+          p["gallery[creator]"] = tag[5:]
+        elif tag.startwith("image_ids:"):
+          p["gallery[include_image]"] = tag[10:]
+    elif value:
+      p[key] = value
+
+  return p
+
 def join_params(old_params, new_params):
   new_dict = {**old_params, **new_params}
 

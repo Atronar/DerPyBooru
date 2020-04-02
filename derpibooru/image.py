@@ -144,8 +144,8 @@ class Image(object):
 
   @property
   def artists(self):
-    self_tag_list = '(' + '||'.join(f"name:{tag}" for tag in self.tags) + ')'
-    art_tag_list = '(category:origin||name:artist needed||name:anonymous artist||name:kotobukiya)'
+    self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
+    art_tag_list = '(category:origin || name:artist needed || name:anonymous artist || name:kotobukiya)'
     tags = Tags(q=(self_tag_list,art_tag_list,), per_page=50, 
                 limit=len(self_tag_list), proxies=self.proxies)
     for tag in tags:
@@ -161,8 +161,8 @@ class Image(object):
 
   @property
   def species(self):
-    self_tag_list = '(' + '||'.join(f"name:{tag}" for tag in self.tags) + ')'
-    sp_tag_list = '(category:species||name:humanized||name:anthro centaur||name:bat alicorn)'
+    self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
+    sp_tag_list = '(category:species || name:humanized || name:anthro centaur || name:bat alicorn)'
     tags = Tags(q=(self_tag_list,sp_tag_list,), per_page=50, 
                 limit=len(self_tag_list), proxies=self.proxies)
     for tag in tags:
@@ -170,8 +170,8 @@ class Image(object):
 
   @property
   def characters(self):
-    self_tag_list = '(' + '||'.join(f"name:{tag}" for tag in self.tags) + ')'
-    ch_tag_list = '(category:character||category:oc)'
+    self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
+    ch_tag_list = '(category:character || category:oc)'
     tags = Tags(q=(self_tag_list,ch_tag_list,"-name:oc","-name:oc only"),
                 per_page=50, limit=len(self_tag_list), proxies=self.proxies)
     for tag in tags:
@@ -180,8 +180,8 @@ class Image(object):
   @property
   def spoiler(self):
     spoiler_tags = []
-    self_tag_list = '(' + '||'.join(f"name:{tag}" for tag in self.tags) + ')'
-    sp_tag_list = '(category:spoiler||category:content-official)'
+    self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
+    sp_tag_list = '(category:spoiler || category:content-official)'
     tags = Tags(q=(self_tag_list,sp_tag_list,), per_page=50,
                 limit=len(self_tag_list), proxies=self.proxies)
     aliases = []
@@ -192,7 +192,7 @@ class Image(object):
         aliases.extend(tag.aliases)
       elif tag.category == "content-official":
         spoiler_tags.append(tag.name_in_namespace)
-    aliases = '||'.join(f"slug:{tag}" for tag in set(aliases))
+    aliases = ' || '.join(f"slug:{tag}" for tag in set(aliases))
     tags = Tags(q=(aliases,), per_page=50, limit=len(self_tag_list), proxies=self.proxies)
     for tag in tags:
       if tag.category == "spoiler" and tag.name != "leak":

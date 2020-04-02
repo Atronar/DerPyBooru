@@ -337,7 +337,7 @@ class Related(Search):
     self._params = {
       "key": api_key(key) if key else api_key(image._params['key']),
       "filter_id": validate_filter(filter_id),
-      "perpage": set_limit(per_page)
+      "per_page": set_limit(per_page)
     }
     self._limit = set_limit(limit)
     self._search = get_related(self.image.id, self._params, self._limit, proxies=self.proxies)
@@ -348,7 +348,7 @@ class Related(Search):
     Returns a search URL built on set parameters. Example based on default
     parameters:
 
-    https://derpibooru.org/images/***/related?key=&filter_id=&perpage=25
+    https://derpibooru.org/images/***/related?key=&filter_id=&per_page=25
     """
     return url_related(self.image.id, self.parameters)
 
@@ -394,14 +394,6 @@ class Related(Search):
     Related() hasn't pages.
     """
     return self
-
-  def per_page(self,limit):
-    """
-    Unlike Search(), Related() use perpage instead per_page.
-    """
-    params = join_params(self.parameters, {"perpage": set_limit(limit), "proxies": self.proxies})
-
-    return self.__class__(**params)
 
   def reverse(self,url):
     """
