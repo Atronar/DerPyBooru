@@ -44,7 +44,9 @@ class Tag(object):
         else:
           self._data = data = get_tag_data(slugging_tag(tag), proxies=proxies)
       elif tag_id:
-          self._data = data = next(get_tags({"q": (f"id:{tag_id}",), "per_page":1}, 1, proxies=proxies))
+          self._data = data = next(get_tags({"q": (f"id:{tag_id}",), "per_page":1},
+                                            1, proxies=proxies)
+                                  )
     else:
       self._data = data
     for field, body in self.data.items():

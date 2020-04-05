@@ -48,7 +48,8 @@ class Filters(object):
         filters_id = "system"
       
     self._limit = set_limit(limit)
-    self._search = get_filters(filters_id, self._params, self._limit, proxies=self.proxies)
+    self._search = get_filters(filters_id, self._params, 
+                               self._limit, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -77,7 +78,10 @@ class Filters(object):
     Takes a user's API key string which applies content settings. API keys can
     be found at <https://derpibooru.org/registration/edit>.
     """
-    params = join_params(self.parameters, {"key": key, "proxies": self.proxies})
+    params = join_params(self.parameters, {"key": key,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -86,7 +90,7 @@ class Filters(object):
     Set absolute limit on number of filters to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    self._limit = set_limit(limit)
+    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -94,16 +98,22 @@ class Filters(object):
     """
     Set page for gets result of search.
     """
-    params = join_params(self.parameters, {"page": set_limit(page), "proxies": self.proxies})
+    params = join_params(self.parameters, {"page": set_limit(page),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def per_page(self,limit):
     """
     Set absolute limit on number of filters to get, or set to None to return
-    defaulting 25 posts; max 50 posts. This limit on API-level.
+    defaulting 25 posts; max 50 filters. This limit on API-level.
     """
-    params = join_params(self.parameters, {"per_page": set_limit(limit), "proxies": self.proxies})
+    params = join_params(self.parameters, {"per_page": set_limit(limit),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 

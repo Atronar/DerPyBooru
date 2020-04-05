@@ -30,7 +30,8 @@ from .helpers import tags, api_key, sort_format, join_params, user_option, set_l
                      validate_filter, set_distance
 
 __all__ = [
-  "Search"
+  "Search",
+  "Related"
 ]
 
 class Search(object):
@@ -126,7 +127,10 @@ class Search(object):
     Takes a user's API key string which applies content settings. API keys can
     be found at <https://derpibooru.org/registration/edit>.
     """
-    params = join_params(self.parameters, {"key": key, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"key": key,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -134,7 +138,10 @@ class Search(object):
     """
     Takes one or more strings for searching by tag and/or metadata.
     """
-    params = join_params(self.parameters, {"q": q, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"q": q,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -144,7 +151,10 @@ class Search(object):
     sort.SCORE, sort.COMMENTS, sort.HEIGHT, sort.RELEVANCE, sort.CREATED_AT,
     and sort.RANDOM; default is sort.CREATED_AT.
     """
-    params = join_params(self.parameters, {"sf": sf, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"sf": sf,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -152,7 +162,10 @@ class Search(object):
     """
     Order results from largest to smallest; default is descending order.
     """
-    params = join_params(self.parameters, {"sd": "desc", "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"sd": "desc",
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -160,7 +173,10 @@ class Search(object):
     """
     Order results from smallest to largest; default is descending order.
     """
-    params = join_params(self.parameters, {"sd": sd, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"sd": sd,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -180,7 +196,10 @@ class Search(object):
     
     If no filter is provided, the user's current filter will be used.
     """
-    params = join_params(self.parameters, {"filter_id": validate_filter(filter_id), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"filter_id": validate_filter(filter_id),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -255,7 +274,10 @@ class Search(object):
      Adds tags to current search.
      """
      query = self.parameters['q'].union(q)
-     params = join_params(self.parameters, {"q": query, "limit": self._limit, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                            "limit": self._limit,
+                                            "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
@@ -264,26 +286,34 @@ class Search(object):
      Removes tags from current search.
      """
      query = self.parameters['q'].difference(q)
-     params = join_params(self.parameters, {"q": query, "limit": self._limit, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                            "limit": self._limit,
+                                            "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
   def get_related(self,image):
     if isinstance(image,Image):
       return Related(image, key=self.parameters['key'], limit=self._limit, \
-                     filter_id=self.parameters['filter_id'], per_page=self.parameters['per_page'], \
+                     filter_id=self.parameters['filter_id'], \
+                     per_page=self.parameters['per_page'], \
                      proxies=self.proxies)
     else:
       return Related(Image(None, image_id=image, proxies=self.proxies), \
                      key=self.parameters['key'], limit=self._limit, \
-                     filter_id=self.parameters['filter_id'], per_page=self.parameters['per_page'], \
+                     filter_id=self.parameters['filter_id'], \
+                     per_page=self.parameters['per_page'], \
                      proxies=self.proxies)
 
   def get_page(self,page):
     """
     Set page for gets result of search.
     """
-    params = join_params(self.parameters, {"page": set_limit(page), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"page": set_limit(page),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -292,7 +322,10 @@ class Search(object):
     Set absolute limit on number of images to get, or set to None to return
     defaulting 25 posts; max 50 posts. This limit on API-level.
     """
-    params = join_params(self.parameters, {"per_page": set_limit(limit), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"per_page": set_limit(limit),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -300,7 +333,10 @@ class Search(object):
     """
     Takes an url image for reverse search.
     """
-    params = join_params(self.parameters, {"reverse_url": url, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"reverse_url": url,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -308,7 +344,10 @@ class Search(object):
     """
     Match distance for reverse search (suggested values: between 0.2 and 0.5)
     """
-    params = join_params(self.parameters, {"distance": set_distance(distance), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"distance": set_distance(distance),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -356,7 +395,10 @@ class Related(Search):
     """
     Takes one or more strings for searching by tag and/or metadata.
     """
-    params = join_params(self.parameters, {"q": q, "proxies": self.proxies})
+    params = join_params(self.parameters, {"q": q,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
     return Search(**params)
 
   def sort_by(self, sf):
@@ -399,7 +441,10 @@ class Related(Search):
     """
     Takes an url image for reverse search.
     """
-    params = join_params(self.parameters, {"reverse_url": url, "proxies": self.proxies})
+    params = join_params(self.parameters, {"reverse_url": url,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return Search(**params)
 

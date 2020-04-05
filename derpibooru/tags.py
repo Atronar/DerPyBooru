@@ -44,7 +44,7 @@ class Tags(object):
   def __init__(self, q=set(), limit=50, per_page=25, page=1, proxies={}):
     """
     By default initializes an instance of Tags with the parameters to get
-    the first 25 comments on Derpibooru's comments activity page.
+    the first 25 comments on Derpibooru's tags page.
     """
     self.proxies = proxies
     self._params = {
@@ -57,7 +57,7 @@ class Tags(object):
   
   def __iter__(self):
     """
-    Make Comments() iterable so that new search results can be lazily generated
+    Make Tags() iterable so that new search results can be lazily generated
     for performance reasons.
     """
     return self
@@ -66,7 +66,7 @@ class Tags(object):
   def parameters(self):
     """
     Returns a list of available parameters; useful for passing state to new
-    instances of Comments().
+    instances of Tags().
     """
     return self._params
 
@@ -84,16 +84,19 @@ class Tags(object):
     """
     Takes one or more strings for searching by query.
     """
-    params = join_params(self.parameters, {"q": q, "proxies": self.proxies})
+    params = join_params(self.parameters, {"q": q,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def limit(self, limit):
     """
-    Set absolute limit on number of images to return, or set to None to return
-    as many results as needed; default 50 posts. This limit on app-level.
+    Set absolute limit on number of tags to return, or set to None to return
+    as many results as needed; default 50 tags. This limit on app-level.
     """
-    self._limit = set_limit(limit)
+    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -102,7 +105,10 @@ class Tags(object):
      Adds query to current search.
      """
      query = self._params['q'].union(q)
-     params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
      return self.__class__(**params)
 
@@ -111,7 +117,10 @@ class Tags(object):
      Removes query from current search.
      """
      query = self._params['q'].difference(q)
-     params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
      return self.__class__(**params)
 
@@ -119,16 +128,22 @@ class Tags(object):
     """
     Set returned page of search.
     """
-    params = join_params(self.parameters, {"page": set_limit(page), "proxies": self.proxies})
+    params = join_params(self.parameters, {"page": set_limit(page),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def per_page(self,limit):
     """
-    Set absolute limit on number of images to get, or set to None to return
-    defaulting 25 posts; max 50 posts. This limit on API-level.
+    Set absolute limit on number of tags to get, or set to None to return
+    defaulting 25 tags; max 50 tags. This limit on API-level.
     """
-    params = join_params(self.parameters, {"per_page": set_limit(limit), "proxies": self.proxies})
+    params = join_params(self.parameters, {"per_page": set_limit(limit),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 

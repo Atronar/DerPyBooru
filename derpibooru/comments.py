@@ -42,8 +42,8 @@ class Comments(object):
   easy.
   """
   def __init__(self, key="", q=set(), limit=50, filter_id="",
-               author="", body="", created_at="", comment_id="", image_id="", my=None, user_id="",
-               per_page=25, page=1, proxies={}):
+               author="", body="", created_at="", comment_id="", image_id="",
+               my=None, user_id="", per_page=25, page=1, proxies={}):
     """
     By default initializes an instance of Comments with the parameters to get
     the first 25 comments on Derpibooru's comments activity page.
@@ -51,7 +51,9 @@ class Comments(object):
     self.proxies = proxies
     self._params = {
       "key": api_key(key),
-      "q": search_comments_fields(q, author=author, body=body, created_at=created_at, comment_id=comment_id, image_id=image_id, my=my, user_id=user_id),
+      "q": search_comments_fields(q, author=author, body=body,
+                                  created_at=created_at, comment_id=comment_id,
+                                  image_id=image_id, my=my, user_id=user_id),
       "filter_id": validate_filter(filter_id),
       "per_page": set_limit(per_page),
       "page": set_limit(page)
@@ -89,7 +91,10 @@ class Comments(object):
     Takes a user's API key string which applies content settings. API keys can
     be found at <https://derpibooru.org/registration/edit>.
     """
-    params = join_params(self.parameters, {"key": key, "proxies": self.proxies})
+    params = join_params(self.parameters, {"key": key,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -97,7 +102,10 @@ class Comments(object):
     """
     Takes one or more strings for searching by query.
     """
-    params = join_params(self.parameters, {"q": q, "proxies": self.proxies})
+    params = join_params(self.parameters, {"q": q,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -106,7 +114,7 @@ class Comments(object):
     Set absolute limit on number of images to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    self._limit = set_limit(limit)
+    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -117,7 +125,10 @@ class Comments(object):
     
     If no filter is provided, the user's current filter will be used.
     """
-    params = join_params(self.parameters, {"filter_id": validate_filter(filter_id), "proxies": self.proxies})
+    params = join_params(self.parameters, {"filter_id": validate_filter(filter_id),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -131,7 +142,12 @@ class Comments(object):
        else:
           query = self.query_remove(f"-{field}:{string}").query_append(f"{field}:{string}")
     else:
-       exists_tags = set(filter(lambda tag: True if f"{tag}".startswith(f"field:") or f"{tag}".startswith(f"-{field}:") else False,q))
+       exists_tags = set(filter(lambda tag: True
+                                            if f"{tag}".startswith(f"field:")
+                                               or f"{tag}".startswith(f"-{field}:")
+                                            else False,
+                                q)
+                        )
        query = self.query_remove(exists_tags)
     return query
 
@@ -181,7 +197,10 @@ class Comments(object):
      Adds query to current search.
      """
      query = self._params['q'].union(q)
-     params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
@@ -190,7 +209,10 @@ class Comments(object):
      Removes query from current search.
      """
      query = self._params['q'].difference(q)
-     params = join_params(self.parameters, {"q": query, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
@@ -198,21 +220,27 @@ class Comments(object):
     """
     Set returned page of search.
     """
-    params = join_params(self.parameters, {"page": set_limit(page), "proxies": self.proxies})
+    params = join_params(self.parameters, {"page": set_limit(page),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def per_page(self,limit):
     """
-    Set absolute limit on number of images to get, or set to None to return
+    Set absolute limit on number of comments to get, or set to None to return
     defaulting 25 posts; max 50 posts. This limit on API-level.
     """
-    params = join_params(self.parameters, {"per_page": set_limit(limit), "proxies": self.proxies})
+    params = join_params(self.parameters, {"per_page": set_limit(limit),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def __next__(self):
     """
-    Returns a result wrapped in a new instance of Image().
+    Returns a result wrapped in a new instance of Comment().
     """
     return Comment(next(self._search), proxies=self.proxies)

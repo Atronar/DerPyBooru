@@ -42,9 +42,8 @@ class Galleries(object):
   def __init__(self, key="", q=set(), limit=50,
                per_page=25, page=1, proxies={}):
     """
-    By default initializes an instance of Search with the parameters to get
-    the first 25 images on Derpibooru's front page.
-    For reverse searching by image use reverse_url field.
+    By default initializes an instance of Galleries with the parameters to get
+    the first 25 galleries on Derpibooru's galleries page.
     """
     self.proxies = proxies
     self._params = {
@@ -86,7 +85,10 @@ class Galleries(object):
     Takes a user's API key string which applies content settings. API keys can
     be found at <https://derpibooru.org/registration/edit>.
     """
-    params = join_params(self.parameters, {"key": key, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"key": key,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
@@ -94,14 +96,17 @@ class Galleries(object):
     """
     Takes one or more strings for searching by tag and/or metadata.
     """
-    params = join_params(self.parameters, {"q": q, "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"q": q,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def limit(self, limit):
     """
-    Set absolute limit on number of images to return, or set to None to return
-    as many results as needed; default 50 posts. This limit on app-level.
+    Set absolute limit on number of galleries to return, or set to None to return
+    as many results as needed; default 50 galleries. This limit on app-level.
     """
     params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
 
@@ -112,7 +117,10 @@ class Galleries(object):
      Adds tags to current search.
      """
      query = self.parameters['q'].union(q)
-     params = join_params(self.parameters, {"q": query, "limit": self._limit, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
@@ -121,7 +129,10 @@ class Galleries(object):
      Removes tags from current search.
      """
      query = self.parameters['q'].difference(q)
-     params = join_params(self.parameters, {"q": query, "limit": self._limit, "proxies": self.proxies})
+     params = join_params(self.parameters, {"q": query,
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                         )
 
      return self.__class__(**params)
 
@@ -129,16 +140,22 @@ class Galleries(object):
     """
     Set page for gets result of search.
     """
-    params = join_params(self.parameters, {"page": set_limit(page), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"page": set_limit(page),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 
   def per_page(self,limit):
     """
-    Set absolute limit on number of images to get, or set to None to return
-    defaulting 25 posts; max 50 posts. This limit on API-level.
+    Set absolute limit on number of galleries to get, or set to None to return
+    defaulting 25 galleries; max 50 galleries. This limit on API-level.
     """
-    params = join_params(self.parameters, {"per_page": set_limit(limit), "limit": self._limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"per_page": set_limit(limit),
+                                           "limit": self._limit,
+                                           "proxies": self.proxies}
+                        )
 
     return self.__class__(**params)
 

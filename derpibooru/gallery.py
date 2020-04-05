@@ -71,10 +71,12 @@ class Gallery(object):
 
   @property
   def thumbnail(self):
-    return Image(None, image_id=self.thumbnail_id, search_params=self._params, proxies=self.proxies)
+    return Image(None, image_id=self.thumbnail_id,
+                 search_params=self._params, proxies=self.proxies)
   
-  def images(self, sf="created_at", sd="desc", limit=50, faves="", upvotes="", uploads="",
-             watched="", filter_id="", per_page=25, page=1):
+  def images(self, sf="created_at", sd="desc", limit=50,
+             faves="", upvotes="", uploads="", watched="",
+             filter_id="", per_page=25, page=1):
     return Search(key=self._params["key"] if "key" in self._params else "", 
                   q=(f"gallery_id:{self.id}",), sf=sf, sd=sd, limit=limit,
                   faves=faves, upvotes=upvotes, uploads=uploads, watched=watched,
