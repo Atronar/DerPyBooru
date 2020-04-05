@@ -6,8 +6,8 @@ from setuptools import find_packages
 setup(
   name = "DerPyBooruPhi",
   description = "Python bindings for Derpibooru's API",
-  url = "https://github.com/Atronar/DerPyBooru",
-  version = "0.8.0",
+  url = "https://github.com/Atronar/DerPyBooruPhi",
+  version = "0.9.0",
   author = "ATroN",
   author_email = "master.atron@gmail.com",
   license = "Simplified BSD License",
