@@ -44,9 +44,9 @@ class Comment(object):
   def __str__(self):
     if self.author:
       return '''Comment({}: "{}")'''.format(self.id,
-                                            self.body.strip().split('\n',1)[0][:27]+'...' \
-                                              if len(self.body)>30 \
-                                              else self.body.strip().split('\n',1)[0]
+                                            self.body.replace('\r','').strip().split('\n',1)[0][:27]+'...' \
+                                              if len(self.body.replace('\r',''))>30 \
+                                              else self.body.replace('\r','').strip().split('\n',1)[0]
                                            )
     else:
       return f'''Deleted comment({self.id} in image {self.image_id})'''
