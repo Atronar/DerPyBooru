@@ -145,7 +145,7 @@ class Image(object):
   @property
   def artists(self):
     self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
-    art_tag_list = '(category:origin || name:artist needed || name:anonymous artist || name:kotobukiya)'
+    art_tag_list = '(category:origin, namespace:?* || name:artist needed || name:anonymous artist || name:kotobukiya)'
     tags = Tags(q=(self_tag_list,art_tag_list,), per_page=50, 
                 limit=len(self_tag_list), proxies=self.proxies)
     for tag in tags:
