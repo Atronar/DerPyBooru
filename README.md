@@ -141,3 +141,6 @@ for post in Search().key(key).watched(user.ONLY):
 - Work with tags: category, alliaces, implies, etc.
 - Getting profiles
 - Getting filters
+- Getting galleries
+- Work with forums
+- Updated sort and query lists

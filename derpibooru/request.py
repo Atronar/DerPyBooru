@@ -112,13 +112,15 @@ def url_related(id_number, params):
   return url
 
 def request_related(id_number, params, proxies={}):
-  search, p = f"https://www.derpibooru.org/images/{id_number}/related", format_params(params)
+  search, p = f"https://derpibooru.org/images/{id_number}/related", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
   # It should be temporary solution, until related returns to API
   if request.status_code == codes.ok:
     images = [f"""id:{image.split('"',1)[0]}""" for image in request.text.split('<div class="media-box" data-image-id="')][1:]
   params['q'] = (" || ".join(images),)
+  params['sf'] = "_score"
+  params['sd'] = "desc"
   search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
@@ -333,3 +335,143 @@ def get_galleries(params, limit=50, proxies={}):
     r = galleries_requests(params, proxies=proxies)
     for gallery in r:
       yield gallery
+
+def forums_request(params, proxies={}):
+  search, p = "https://derpibooru.org/api/v1/json/forums", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    forums, forum_count = request.json()["forums"], 0
+    for forum in forums:
+      yield forum
+      forum_count += 1
+    if forum_count < p["per_page"]:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_forums(params, limit=50, proxies={}):
+  if limit is not None:
+    if limit > 0:
+      r = forums_request(params, proxies=proxies)
+      for index, forum in enumerate(r, start=1):
+        yield forum
+        if index >= limit:
+          break
+  else:
+    r = forums_request(params, proxies=proxies)
+    for forum in r:
+      yield forum
+
+def get_forum_data(short_name, proxies={}):
+  url = f"https://www.derpibooru.org/api/v1/json/forums/{short_name}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+    return data["forum"]
+
+def url_topics(forum_short_name, params):
+  p = format_params(params)
+  url = f"https://derpibooru.org/forums/{forum_short_name}?{urlencode(p)}"
+  return url
+
+def topics_request(forum_short_name, params, proxies={}):
+  search, p = f"https://derpibooru.org/api/v1/json/forums/{forum_short_name}/topics", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    topics, topic_count = request.json()["topics"], 0
+    for topic in topics:
+      yield topic
+      topic_count += 1
+    if topic_count < p["per_page"]:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_topics(forum_short_name, params, limit=50, proxies={}):
+  if limit is not None:
+    if limit > 0:
+      r = topics_request(forum_short_name, params, proxies=proxies)
+      for index, topic in enumerate(r, start=1):
+        yield topic
+        if index >= limit:
+          break
+  else:
+    r = topics_request(forum_short_name, params, proxies=proxies)
+    for topic in r:
+      yield topic
+
+def get_topic_data(forum_short_name, topic_slug, proxies={}):
+  url = f"https://www.derpibooru.org/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+    return data["topic"]
+
+def url_search_posts(params):
+  p = format_params(params)
+  url = f"https://derpibooru.org/posts?{urlencode(p)}"
+  return url
+
+def url_posts(forum_short_name, topic_slug, params):
+  import math
+  p = format_params(params)
+  api_page = p['page']
+  api_per_page = p['per_page']
+  web_per_page = 25
+  api_last_post_on_page = api_page * api_per_page
+  api_first_post_on_page = api_last_post_on_page - api_per_page + 1 
+  p['page'] = math.ceil(api_first_post_on_page / 25)
+  del(p['per_page'])
+  url = f"https://derpibooru.org/forums/{forum_short_name}/topics/{topic_slug}?{urlencode(p)}"
+  return url
+
+def posts_request(params, forum_short_name="", topic_slug="", proxies={}):
+  if forum_short_name and topic_slug:
+    search, p = f"https://derpibooru.org/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}/posts", format_params(params)
+  else:
+    search, p = "https://derpibooru.org/api/v1/json/search/posts", format_params(params)
+  request = get(search, params=p, proxies=proxies)
+
+  while request.status_code == codes.ok:
+    posts, post_count = request.json()["posts"], 0
+    for post in posts:
+      yield post
+      post_count += 1
+    if post_count < p["per_page"]:
+      break
+
+    p["page"] += 1
+
+    request = get(search, params=p, proxies=proxies)
+
+def get_posts(params, forum_short_name="", topic_slug="", limit=50, proxies={}):
+  if limit is not None:
+    if limit > 0:
+      r = posts_request(params, forum_short_name=forum_short_name, topic_slug=topic_slug, proxies=proxies)
+      for index, post in enumerate(r, start=1):
+        yield post
+        if index >= limit:
+          break
+  else:
+    r = posts_request(params, forum_short_name=forum_short_name, topic_slug=topic_slug, proxies=proxies)
+    for post in r:
+      yield post
+
+def get_post_data(id_number, proxies={}):
+  url = f"https://derpibooru.org/api/v1/json/posts/{id_number}"
+
+  request = get(url, proxies=proxies)
+
+  if request.status_code == codes.ok:
+    data = request.json()
+    return data["post"]

@@ -95,10 +95,10 @@ class Query(object):
   @property
   def equal(self):
     return {"alias_of", "aliased", "aliases", "analyzed_name", "author", "body",
-            "category", "description", "faved_by", "gallery_id", "image_ids",
+            "category", "description", "faved_by", "forum_id", "gallery_id", "image_ids",
             "implied_by", "implies", "my", "name", "name_in_namespace", "namespace",
-            "original_format", "short_description", "slug", "source_url",
-            "orig_sha512_hash", "sha512_hash", "uploader", "watcher_ids"}
+            "original_format", "short_description", "slug", "source_url", "subject",
+            "orig_sha512_hash", "sha512_hash", "topic_id", "uploader", "watcher_ids"}
 
   # int, float, date
   @property
@@ -130,5 +130,10 @@ class Query(object):
   def galleries_attr(self):
     return ("created_at", "description", "id", "image_count", "image_ids", "title",
             "updated_at", "user", "watcher_count", "watcher_ids")
+
+  @property
+  def posts_attr(self):
+    return ("author", "body", "created_at", "forum_id", "id", "my",
+            "subject", "topic_id", "updated_at", "user_id")
 
 query = Query()

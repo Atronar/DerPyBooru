@@ -36,7 +36,9 @@ __all__ = [
   "format_params",
   "join_params",
   "set_limit",
-  "set_distance"
+  "set_distance",
+  "slugging_tag",
+  "destructive_slug"
 ]
 
 from .sort import sort
@@ -49,7 +51,8 @@ def tags(q):
 
   return tags if tags else set()
 
-def search_comments_fields(q, author="", body="", created_at="", comment_id="", image_id="", my=None, user_id=""):
+def search_comments_fields(q, author="", body="", created_at="", comment_id="", \
+                           image_id="", my=None, user_id=""):
   if ',' in q:
     q = q.split(',')
 
@@ -213,7 +216,22 @@ def slugging_tag(tag):
       elif char is 'stop':
         do_slug = True
   if do_slug:
-    for i,j in {'-':'-dash-', '/':'-fwslash', '\\':'-bwslash-', ':':'-colon-', '.':'-dot-', '+':'-plus-'}.items():
+    for i,j in {'-':'-dash-', '/':'-fwslash', '\\':'-bwslash-',
+                ':':'-colon-', '.':'-dot-', '+':'-plus-'}.items():
       slug = slug.replace(i,j)
     slug = quote_plus(slug)
   return slug
+
+def destructive_slug(string):
+  output = string
+  for char in string:
+    if ord(char) not in range(ord(" "),ord("~")) or char=="'":
+      output = output.replace(char,"")
+    elif ord(char) not in range(ord("a"),ord("z")) \
+     and ord(char) not in range(ord("A"),ord("Z")) \
+     and ord(char) not in range(ord("0"),ord("9")):
+      output = output.replace(char,"-")
+  while "--" in output:
+    output = output.replace("--","-")
+  output = output.strip("-").lower()
+  return output

@@ -29,6 +29,7 @@ from .tag import Tag
 from .comments import Comments
 from .search import Search
 from .galleries import Galleries
+from .posts import SearchPosts
 
 __all__ = [
   "Profile"
@@ -95,6 +96,10 @@ class Profile(object):
   def galleries(self, key="", limit=50, per_page=25, page=1):
     return Galleries(self, key=key, q=(f"user:{self.name}",), limit=limit,
                      per_page=per_page, page=page, proxies=self.proxies)
+
+  def posts(self, limit=50, per_page=25, page=1):
+    return SearchPosts(q={f"user_id:{self.id}",}, limit=limit, per_page=per_page,
+                       page=page, proxies=self.proxies)
 
 class Award(object):
   def __init__(self, data):
