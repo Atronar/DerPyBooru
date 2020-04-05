@@ -329,5 +329,3 @@ def get_post_data(id_number, proxies={}):
   if request.status_code == codes.ok:
     data = request.json()
     return data["post"]
-
-# -148 strok
