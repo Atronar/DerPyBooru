@@ -192,11 +192,12 @@ class Image(object):
         aliases.extend(tag.aliases)
       elif tag.category == "content-official":
         spoiler_tags.append(tag.name_in_namespace)
-    aliases = ' || '.join(f"slug:{tag}" for tag in set(aliases))
-    tags = Tags(q=(aliases,), per_page=50, limit=len(self_tag_list), proxies=self.proxies)
-    for tag in tags:
-      if tag.category == "spoiler" and tag.name != "leak":
-        spoiler_tags.append(tag.name_in_namespace)
+    if aliases:
+      aliases = ' || '.join(f"slug:{tag}" for tag in set(aliases))
+      tags = Tags(q=(aliases,), per_page=50, limit=len(self_tag_list), proxies=self.proxies)
+      for tag in tags:
+        if tag.category == "spoiler" and tag.name != "leak":
+          spoiler_tags.append(tag.name_in_namespace)
     for tag in sorted(set(spoiler_tags)):
       yield tag
 
