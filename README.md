@@ -4,7 +4,7 @@ Python bindings for Derpibooru's API
 
 License: **Simplified BSD License**
 
-Version: **0.9**
+Version: **0.9.1**
 
 ## Features
 
@@ -22,7 +22,7 @@ Version: **0.9**
 
 ### Python 3.x
 
-    $ pip3 install derpybooru
+    $ pip3 install derpybooruphi
  
 ## Checking documentation
 

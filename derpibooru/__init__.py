@@ -14,7 +14,7 @@ Typical usage:
 
 Full API Documentation is found at <https://derpibooru.org/pages/api>.
 
-Library documentation is found at <https://github.com/joshua-stone/DerPyBooru>.
+Library documentation is found at <https://github.com/Atronar/DerPyBooruPh>.
 
 """
 
