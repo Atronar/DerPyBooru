@@ -32,6 +32,13 @@ __all__ = [
   "Filter"
 ]
 
+system_filters = {"default": 100073,
+                  "everything": 56027,
+                  "r34": 37432,
+                  "legacy default": 37431,
+                  "maximum spoilers": 37430,
+                  "dark": 37429}
+
 class Filters(object):
   def __init__(self, key="", filters_id="", limit=50, per_page=25, page=1, proxies={}):
     self.proxies = proxies
@@ -136,18 +143,8 @@ class Filter(object):
       self._data = data
     else:
       norm_str_filter_id = f"{filter_id}".lower()
-      if norm_str_filter_id=="default":
-        filter_id = 100073
-      elif norm_str_filter_id=="everything":
-        filter_id = 56027
-      elif norm_str_filter_id=="r34":
-        filter_id = 37432
-      elif norm_str_filter_id=="legacy default":
-        filter_id = 37431
-      elif norm_str_filter_id=="maximum spoilers":
-        filter_id = 37430
-      elif norm_str_filter_id=="dark":
-        filter_id = 37429
+      if norm_str_filter_id in system_filters:
+        filter_id = system_filters[norm_str_filter_id]
       self._data = data = get_filter_data(validate_filter(filter_id), proxies=proxies)
 
     for field, body in data.items():

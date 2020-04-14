@@ -27,6 +27,7 @@
 from .request import get_image_data, get_image_faves, request as request_image
 from .comments import Comments
 from .tags import Tags
+from .filters import system_filters
 
 __all__ = [
   "Image"
@@ -126,7 +127,7 @@ class Image(object):
 
   def comments(self):
     # filter_id used to get comments for any image
-    return Comments(filter_id=56027, proxies=self.proxies).image_id(self.id)
+    return Comments(filter_id=system_filters["everything"], proxies=self.proxies).image_id(self.id)
        
   @property
   def url(self):
@@ -213,7 +214,7 @@ class Image(object):
     """
     Checking image in my:upvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1,
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
                             'q': (f'id:{self.id}','my:upvotes')}, proxies=self.proxies)
     for img in images:
       return True
@@ -224,7 +225,7 @@ class Image(object):
     """
     Checking image in my:downvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1,
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
                             'q': (f'id:{self.id}','my:downvotes')}, proxies=self.proxies)
     for img in images:
       return True
@@ -235,7 +236,7 @@ class Image(object):
     """
     Checking image in my:uploads.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1,
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
                             'q': (f'id:{self.id}','my:uploads')}, proxies=self.proxies)
     for img in images:
       return True
@@ -246,7 +247,7 @@ class Image(object):
     """
     Checking image in my:faves.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1,
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
                             'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
     for img in images:
       return True
@@ -257,7 +258,7 @@ class Image(object):
     """
     Checking image in my:watches.
     """
-    images = request_image({'key': self.key, 'filter_id': 56027, 'per_page': 1,
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
                             'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
     for img in images:
       return True
