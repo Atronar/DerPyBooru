@@ -86,11 +86,11 @@ def search_comments_fields(q, author="", body="", created_at="", comment_id="", 
           user_id = tag.replace("user_id:","",1)
       elif tag.startswith("-my:"): # -my:comments
         if my is None: 
-          if tag is "-my:comments":
+          if tag == "-my:comments":
             my = False
       elif tag.startswith("my:"): # my:comments
         if not my: 
-          if tag is "my:comments":
+          if tag == "my:comments":
             my = True
       else:
         tags.append(tag)
@@ -211,9 +211,9 @@ def slugging_tag(tag):
       break
   if not do_slug and '-' in slug:
     for char in ('-dash-','-fwslash','-bwslash-','-colon-','-dot-','-plus-','stop'):
-      if char in slug and char is not 'stop':
+      if char in slug and char != 'stop':
         break
-      elif char is 'stop':
+      elif char == 'stop':
         do_slug = True
   if do_slug:
     for i,j in {'-':'-dash-', '/':'-fwslash', '\\':'-bwslash-',
