@@ -98,8 +98,8 @@ def get_image_data(id_number, proxies={}):
   if request.status_code == codes.ok:
     data = request.json()
 
-    if "duplicate_of" in data:
-      return get_image_data(data["duplicate_of"], proxies=proxies)
+    if data["image"]["duplicate_of"]:
+      return get_image_data(data["image"]["duplicate_of"], proxies=proxies)
     else:
       return data["image"]
 

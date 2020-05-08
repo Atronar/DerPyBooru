@@ -19,7 +19,7 @@ Library documentation is found at <https://github.com/Atronar/DerPyBooruPh>.
 """
 
 __title__ = "DerPyBooru"
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 __author__ = "Joshua Stone"
 __license__ = "Simplified BSD Licence"
 __copyright__ = "Copyright (c) 2014, Joshua Stone; 2020, ATroN"
