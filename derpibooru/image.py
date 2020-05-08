@@ -194,8 +194,8 @@ class Image(object):
       elif tag.category == "content-official":
         spoiler_tags.append(tag.name_in_namespace)
     if aliases:
-      aliases = ' || '.join(f"slug:{tag}" for tag in set(aliases))
-      tags = Tags(q=(aliases,), per_page=50, limit=len(self_tag_list), proxies=self.proxies)
+      aliases_str = ' || '.join(f"slug:{tag}" for tag in set(aliases))
+      tags = Tags(q=(aliases_str,), per_page=50, limit=len(aliases), proxies=self.proxies)
       for tag in tags:
         if tag.category == "spoiler" and tag.name != "leak":
           spoiler_tags.append(tag.name_in_namespace)
