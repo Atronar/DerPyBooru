@@ -43,8 +43,11 @@ __all__ = [
   "url_posts", "request_posts", "get_posts", "get_post_data"
 ]
 
-def request_content(search, p, items_name, proxies={}):
-  request = get(search, params=p, proxies=proxies)
+def request_content(search, p, items_name, post=False, proxies={}):
+  if post:
+    request = post(search, params=p, proxies=proxies)
+  else:
+    request = get(search, params=p, proxies=proxies)
   if "per_page" not in p:
     p["per_page"] = 50
   while request.status_code == codes.ok:
@@ -79,10 +82,12 @@ def request(params, proxies={}):
   if "reverse_url" in params and params["reverse_url"]:
     search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
     p = {i:p[i] for i in p if i in ('url','distance')}
+    post = True
   else:
     search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
     p = {i:p[i] for i in p if i not in ('url','distance')}
-  for image in request_content(search, p, "images", proxies=proxies):
+    post = False
+  for image in request_content(search, p, "images", post=post, proxies=proxies):
     yield image
 
 def get_images(params, limit=50, proxies={}):
@@ -214,6 +219,7 @@ def get_user_data(user_id, proxies={}):
     return data["user"]
 
 def request_filters(filter_id, params, proxies={}):
+  '''filter_id can be "system"'''
   search, p = f"https://derpibooru.org/api/v1/json/filters/{filter_id}", format_params(params)
   for filter_item in request_content(search, p, "filters", proxies=proxies):
     yield filter_item
