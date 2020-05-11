@@ -45,7 +45,7 @@ from .sort import sort
 from .user import user
 
 def tags(q):
-  if ',' in q:
+  if isinstance(q, str):
     q = q.split(',')
   tags = {str(tag).strip() for tag in q if tag}
 
