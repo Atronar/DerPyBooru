@@ -1,10 +1,10 @@
-# DerPyBooru
+# DerPyBooruPhi
 
 Python bindings for Derpibooru's API
 
 License: **Simplified BSD License**
 
-Version: **0.9.2**
+Version: **0.10.0**
 
 ## Features
 
@@ -144,3 +144,9 @@ for post in Search().key(key).watched(user.ONLY):
 - Getting galleries
 - Work with forums
 - Updated sort and query lists
+- Posting images:
+```python
+  new_img = PostImage().key(API_KEY).image_url("https://pbs.twimg.com/media/EW4YtdmWAAEPaae.png:orig").description(description).tag_input("safe", "artist:dilarus", "ts", "pp").source_url("https://twitter.com/Dilarus/status/1255968549052583941")
+  posted_img = new_img.post()
+  id_number, score, tags = posted_img.id, posted_img.score, ", ".join(posted_img.tags)
+```

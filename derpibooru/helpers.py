@@ -31,6 +31,8 @@ __all__ = [
   "search_comments_fields",
   "api_key",
   "validate_filter",
+  "validate_url",
+  "validate_description",
   "sort_format",
   "user_option",
   "format_params",
@@ -121,6 +123,30 @@ def api_key(api_key):
 def validate_filter(filter_id):
   # is it always an number?
   return str(filter_id) if filter_id else None
+
+def validate_url(url):
+  if url:
+    norm_url = str(url).strip().strip('/')
+    if any(norm_url.startswith(scheme) for scheme in {"http://", "https://"}):
+      return norm_url
+    elif "://" in norm_url:
+      return ""
+    else:
+      return f"http://{norm_url}"
+  else:
+    return ""
+
+def validate_description(string):
+  if len(string.encode('utf-8'))<50000:
+    return string
+  else:
+    n=50000
+    while True:
+      try:
+        cutted_string = string.encode('utf-8')[:n].decode('utf-8')
+        return cutted_string
+      except UnicodeDecodeError:
+        n -= 1
 
 def sort_format(sf):
   if sf not in sort.methods:

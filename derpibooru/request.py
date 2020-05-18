@@ -31,6 +31,7 @@ from .helpers import format_params, format_params_url_galleries, slugging_tag
 __all__ = [
   "url", "request", "get_images", "get_image_data", "get_image_faves",
   "url_related", "request_related", "get_related",
+  "post_image",
   "url_comments", "request_comments", "get_comments", "get_comment_data",
   "url_tags", "request_tags", "get_tags", "get_tag_data",
   "get_user_id_by_name", "get_user_data",
@@ -145,6 +146,23 @@ def get_related(id_number, params, limit=50, proxies={}):
   for image in get_content(request_related, id_number, params,
                            limit=limit, proxies=proxies):
     yield image
+
+def post_image(key, image_url, description="", tag_input="", source_url="", proxies={}):
+  '''
+  You must provide the direct link to the image in the image_url parameter.
+  Abuse of the endpoint will result in a ban.
+  '''
+  search = "https://derpibooru.org/api/v1/json/images"
+  json = {"image": {"description": description, 
+                    "tag_input": ", ".join(tag_input), 
+                    "source_url": source_url
+                   },
+          "url": image_url
+         }
+  request = post(search, params={"key": key}, json=json, proxies=proxies)
+  if request.status_code == codes.ok:
+    data = request.json()
+    return data
 
 def url_comments(params):
   p = format_params(params)
