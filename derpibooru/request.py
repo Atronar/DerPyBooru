@@ -43,8 +43,8 @@ __all__ = [
   "url_posts", "request_posts", "get_posts", "get_post_data"
 ]
 
-def request_content(search, p, items_name, post=False, proxies={}):
-  if post:
+def request_content(search, p, items_name, post_request=False, proxies={}):
+  if post_request:
     request = post(search, params=p, proxies=proxies)
   else:
     request = get(search, params=p, proxies=proxies)
@@ -82,12 +82,12 @@ def request(params, proxies={}):
   if "reverse_url" in params and params["reverse_url"]:
     search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
     p = {i:p[i] for i in p if i in ('url','distance')}
-    post = True
+    post_request = True
   else:
     search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
     p = {i:p[i] for i in p if i not in ('url','distance')}
-    post = False
-  for image in request_content(search, p, "images", post=post, proxies=proxies):
+    post_request = False
+  for image in request_content(search, p, "images", post_request=post_request, proxies=proxies):
     yield image
 
 def get_images(params, limit=50, proxies={}):
