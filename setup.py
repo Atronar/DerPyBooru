@@ -7,7 +7,7 @@ setup(
   name = "DerPyBooruPhi",
   description = "Python bindings for Derpibooru's API",
   url = "https://github.com/Atronar/DerPyBooruPhi",
-  version = "0.9.1",
+  version = "0.10.0",
   author = "ATroN",
   author_email = "master.atron@gmail.com",
   license = "Simplified BSD License",
