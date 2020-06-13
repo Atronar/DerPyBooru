@@ -13,6 +13,7 @@ setup(
   license = "Simplified BSD License",
   platforms = ["any"],
   packages = find_packages(),
+  python_requires='>=3.6',
   install_requires = ["requests"],
   include_package_data = True,
   #download_url = "https://github.com/joshua-stone/DerPyBooru/tarball/0.7.2",
