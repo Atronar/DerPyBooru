@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-Derpibooru API bindings
+Philomena API bindings
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Python bindings for Derpibooru's API
+Python bindings for Philomena-based boorus' API like Ponybooru, Derpibooru, etc.
 
 Typical usage:
 
@@ -14,12 +14,12 @@ Typical usage:
 
 Full API Documentation is found at <https://derpibooru.org/pages/api>.
 
-Library documentation is found at <https://github.com/Atronar/DerPyBooruPh>.
+Library documentation is found at <https://github.com/Atronar/DerPyBooruPhi>.
 
 """
 
-__title__ = "DerPyBooru"
-__version__ = "0.10.0"
+__title__ = "DerPyBooruPhi"
+__version__ = "0.10.1"
 __author__ = "Joshua Stone"
 __license__ = "Simplified BSD Licence"
 __copyright__ = "Copyright (c) 2014, Joshua Stone; 2020, ATroN"

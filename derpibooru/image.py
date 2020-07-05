@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_image_data, get_image_faves, request as request_image
+from .request import get_image_data, get_image_faves, request as request_image, url_domain
 from .comments import Comments
 from .tags import Tags
 from .filters import system_filters
@@ -131,7 +131,7 @@ class Image(object):
        
   @property
   def url(self):
-    return f"https://derpibooru.org/images/{self.id}"
+    return f"{url_domain}/images/{self.id}"
 
   @property
   def data(self):

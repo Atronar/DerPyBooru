@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_filters, get_filter_data
+from .request import get_filters, get_filter_data, url_domain
 from .helpers import api_key, join_params, set_limit, validate_filter
 
 __all__ = [
@@ -78,7 +78,7 @@ class Filters(object):
     """
     Returns a standart URL of avaliable filters list
     """
-    return "https://derpibooru.org/filters"
+    return f"{url_domain}/filters"
 
   def key(self, key=""):
     """

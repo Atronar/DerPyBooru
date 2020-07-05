@@ -1,14 +1,14 @@
 # DerPyBooruPhi
 
-Python bindings for Derpibooru's API
+Python bindings for Philomena-based boorus' API like Ponybooru, Derpibooru, etc.
 
 License: **Simplified BSD License**
 
-Version: **0.10.0**
+Version: **0.10.1**
 
 ## Features
 
-- High-level abstraction over Derpibooru's REST API
+- High-level abstraction over Philomena's REST API
 - Parameter chaining for ease of manipulation
 - Syntactic sugar for queries, e.g., "query.score >= 100" compiling to "score.gte:100"
 - Design focusing on iterables and lazy generation for network efficiency
@@ -49,6 +49,14 @@ from derpibooru import Search
 
 for image in Search().query("rarity", "twilight sparkle"):
   print(image.url)
+```
+
+### Getting images from other booru
+
+```python
+import derpibooru
+
+derpibooru.request.url_domain = 'https:\\your.booru.example'
 ```
 
 ### Crawling Derpibooru from first to last post

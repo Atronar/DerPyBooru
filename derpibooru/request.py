@@ -44,6 +44,8 @@ __all__ = [
   "url_posts", "request_posts", "get_posts", "get_post_data"
 ]
 
+url_domain = "https://derpibooru.org"
+
 def request_content(search, p, items_name, post_request=False, proxies={}):
   if post_request:
     request = post(search, params=p, proxies=proxies)
@@ -76,16 +78,16 @@ def get_content(request_func, *request_args, limit=50, **request_kwargs):
 
 def url(params):
   p = format_params(params)
-  url = f"https://derpibooru.org/search?{urlencode(p)}"
+  url = f"{url_domain}/search?{urlencode(p)}"
   return url
 
 def request(params, proxies={}):
   if "reverse_url" in params and params["reverse_url"]:
-    search, p = "https://derpibooru.org/api/v1/json/search/reverse", format_params(params)
+    search, p = f"{url_domain}/api/v1/json/search/reverse", format_params(params)
     p = {i:p[i] for i in p if i in ('url','distance')}
     post_request = True
   else:
-    search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
+    search, p = f"{url_domain}/api/v1/json/search/images", format_params(params)
     p = {i:p[i] for i in p if i not in ('url','distance')}
     post_request = False
   for image in request_content(search, p, "images", post_request=post_request, proxies=proxies):
@@ -97,7 +99,7 @@ def get_images(params, limit=50, proxies={}):
 
 def get_image_data(id_number, proxies={}):
   '''id_number can be "featured"'''
-  url = f"https://derpibooru.org/api/v1/json/images/{id_number}"
+  url = f"{url_domain}/api/v1/json/images/{id_number}"
 
   request = get(url, proxies=proxies)
 
@@ -110,7 +112,7 @@ def get_image_data(id_number, proxies={}):
       return data["image"]
 
 def get_image_faves(id_number, proxies={}):
-  url = f"https://derpibooru.org/images/{id_number}/favorites"
+  url = f"{url_domain}/images/{id_number}/favorites"
 
   request = get(url, proxies=proxies)
 
@@ -124,11 +126,11 @@ def get_image_faves(id_number, proxies={}):
 
 def url_related(id_number, params):
   p = format_params(params)
-  url = f"https://derpibooru.org/images/{id_number}/related?{urlencode(p)}"
+  url = f"{url_domain}/images/{id_number}/related?{urlencode(p)}"
   return url
 
 def request_related(id_number, params, proxies={}):
-  search, p = f"https://derpibooru.org/images/{id_number}/related", format_params(params)
+  search, p = f"{url_domain}/images/{id_number}/related", format_params(params)
   request = get(search, params=p, proxies=proxies)
 
   # It should be temporary solution, until related returns to API
@@ -137,7 +139,7 @@ def request_related(id_number, params, proxies={}):
   params['q'] = (" || ".join(images),)
   params['sf'] = "_score"
   params['sd'] = "desc"
-  search, p = "https://derpibooru.org/api/v1/json/search/images", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/search/images", format_params(params)
 
   for image in request_content(search, p, "images", proxies=proxies):
     yield image
@@ -152,7 +154,7 @@ def post_image(key, image_url, description="", tag_input="", source_url="", prox
   You must provide the direct link to the image in the image_url parameter.
   Abuse of the endpoint will result in a ban.
   '''
-  search = "https://derpibooru.org/api/v1/json/images"
+  search = f"{url_domain}/api/v1/json/images"
   json = {"image": {"description": description, 
                     "tag_input": ", ".join(tag_input), 
                     "source_url": source_url
@@ -168,11 +170,11 @@ def url_comments(params):
   p = format_params(params)
   p["qc"]=p["q"]
   del(p["q"])
-  url = f"https://derpibooru.org/comments?{urlencode(p)}"
+  url = f"{url_domain}/comments?{urlencode(p)}"
   return url
 
 def request_comments(params, proxies={}):
-  search, p = "https://derpibooru.org/api/v1/json/search/comments", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/search/comments", format_params(params)
   for comment in request_content(search, p, "comments", proxies=proxies):
     yield comment
 
@@ -182,7 +184,7 @@ def get_comments(params, limit=50, proxies={}):
     yield comment
 
 def get_comment_data(id_number, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/comments/{id_number}"
+  url = f"{url_domain}/api/v1/json/comments/{id_number}"
 
   request = get(url, proxies=proxies)
 
@@ -195,11 +197,11 @@ def url_tags(params):
   p = format_params(params)
   p["tq"]=p["q"]
   del(p["q"])
-  url = f"https://derpibooru.org/tags?{urlencode(p)}"
+  url = f"{url_domain}/tags?{urlencode(p)}"
   return url
 
 def request_tags(params, proxies={}):
-  search, p = "https://derpibooru.org/api/v1/json/search/tags", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/search/tags", format_params(params)
   for tag in request_content(search, p, "tags", proxies=proxies):
     yield tag
 
@@ -208,7 +210,7 @@ def get_tags(params, limit=50, proxies={}):
     yield tag
 
 def get_tag_data(tag, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/tags/{tag}"
+  url = f"{url_domain}/api/v1/json/tags/{tag}"
 
   request = get(url, proxies=proxies)
 
@@ -218,7 +220,7 @@ def get_tag_data(tag, proxies={}):
     return data["tag"]
 
 def get_user_id_by_name(username, proxies={}):
-  url = f"https://derpibooru.org/profiles/{slugging_tag(username)}"
+  url = f"{url_domain}/profiles/{slugging_tag(username)}"
 
   request = get(url, proxies=proxies)
 
@@ -227,7 +229,7 @@ def get_user_id_by_name(username, proxies={}):
   return user_id
 
 def get_user_data(user_id, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/profiles/{user_id}"
+  url = f"{url_domain}/api/v1/json/profiles/{user_id}"
 
   request = get(url, proxies=proxies)
 
@@ -238,7 +240,7 @@ def get_user_data(user_id, proxies={}):
 
 def request_filters(filter_id, params, proxies={}):
   '''filter_id can be "system"'''
-  search, p = f"https://derpibooru.org/api/v1/json/filters/{filter_id}", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/filters/{filter_id}", format_params(params)
   for filter_item in request_content(search, p, "filters", proxies=proxies):
     yield filter_item
 
@@ -248,7 +250,7 @@ def get_filters(filter_id, params, limit=50, proxies={}):
     yield filter_item
 
 def get_filter_data(filter_id, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/filters/{filter_id}"
+  url = f"{url_domain}/api/v1/json/filters/{filter_id}"
 
   request = get(url, proxies=proxies)
 
@@ -259,11 +261,11 @@ def get_filter_data(filter_id, proxies={}):
 
 def url_galleries(params):
   p = format_params_url_galleries(params)
-  url = f"https://derpibooru.org/galleries?{urlencode(p)}"
+  url = f"{url_domain}/galleries?{urlencode(p)}"
   return url
 
 def request_galleries(params, proxies={}):
-  search, p = "https://derpibooru.org/api/v1/json/search/galleries", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/search/galleries", format_params(params)
   for gallery in request_content(search, p, "galleries", proxies=proxies):
     yield gallery
 
@@ -272,7 +274,7 @@ def get_galleries(params, limit=50, proxies={}):
     yield gallery
 
 def request_forums(params, proxies={}):
-  search, p = "https://derpibooru.org/api/v1/json/forums", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/forums", format_params(params)
   for forum in request_content(search, p, "forums", proxies=proxies):
     yield forum
 
@@ -281,7 +283,7 @@ def get_forums(params, limit=50, proxies={}):
     yield forum
 
 def get_forum_data(short_name, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/forums/{short_name}"
+  url = f"{url_domain}/api/v1/json/forums/{short_name}"
 
   request = get(url, proxies=proxies)
 
@@ -291,11 +293,11 @@ def get_forum_data(short_name, proxies={}):
 
 def url_topics(forum_short_name, params):
   p = format_params(params)
-  url = f"https://derpibooru.org/forums/{forum_short_name}?{urlencode(p)}"
+  url = f"{url_domain}/forums/{forum_short_name}?{urlencode(p)}"
   return url
 
 def request_topics(forum_short_name, params, proxies={}):
-  search, p = f"https://derpibooru.org/api/v1/json/forums/{forum_short_name}/topics", format_params(params)
+  search, p = f"{url_domain}/api/v1/json/forums/{forum_short_name}/topics", format_params(params)
   for topic in request_content(search, p, "topics", proxies=proxies):
     yield topic
 
@@ -305,7 +307,7 @@ def get_topics(forum_short_name, params, limit=50, proxies={}):
     yield topic
 
 def get_topic_data(forum_short_name, topic_slug, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}"
+  url = f"{url_domain}/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}"
 
   request = get(url, proxies=proxies)
 
@@ -315,7 +317,7 @@ def get_topic_data(forum_short_name, topic_slug, proxies={}):
 
 def url_search_posts(params):
   p = format_params(params)
-  url = f"https://derpibooru.org/posts?{urlencode(p)}"
+  url = f"{url_domain}/posts?{urlencode(p)}"
   return url
 
 def url_posts(forum_short_name, topic_slug, params):
@@ -328,14 +330,14 @@ def url_posts(forum_short_name, topic_slug, params):
   api_first_post_on_page = api_last_post_on_page - api_per_page + 1 
   p['page'] = math.ceil(api_first_post_on_page / 25)
   del(p['per_page'])
-  url = f"https://derpibooru.org/forums/{forum_short_name}/topics/{topic_slug}?{urlencode(p)}"
+  url = f"{url_domain}/forums/{forum_short_name}/topics/{topic_slug}?{urlencode(p)}"
   return url
 
 def request_posts(params, forum_short_name="", topic_slug="", proxies={}):
   if forum_short_name and topic_slug:
-    search, p = f"https://derpibooru.org/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}/posts", format_params(params)
+    search, p = f"{url_domain}/api/v1/json/forums/{forum_short_name}/topics/{topic_slug}/posts", format_params(params)
   else:
-    search, p = "https://derpibooru.org/api/v1/json/search/posts", format_params(params)
+    search, p = f"{url_domain}/api/v1/json/search/posts", format_params(params)
   for post in request_content(search, p, "posts", proxies=proxies):
     yield post
 
@@ -346,7 +348,7 @@ def get_posts(params, forum_short_name="", topic_slug="", limit=50, proxies={}):
     yield post
 
 def get_post_data(id_number, proxies={}):
-  url = f"https://derpibooru.org/api/v1/json/posts/{id_number}"
+  url = f"{url_domain}/api/v1/json/posts/{id_number}"
 
   request = get(url, proxies=proxies)
 

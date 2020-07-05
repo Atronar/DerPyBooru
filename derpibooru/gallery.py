@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_galleries
+from .request import get_galleries, url_domain
 from .search import Search
 from .image import Image
 
@@ -57,7 +57,7 @@ class Gallery(object):
        
   @property
   def url(self):
-    return f"https://derpibooru.org/galleries/{self.id}"
+    return f"{url_domain}/galleries/{self.id}"
 
   @property
   def data(self):

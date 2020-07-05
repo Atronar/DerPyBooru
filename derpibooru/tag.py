@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_tag_data, get_tags
+from .request import get_tag_data, get_tags, url_domain
 from .helpers import slugging_tag
 
 __all__ = [
@@ -65,7 +65,7 @@ class Tag(object):
     """
     Also url for search image by single tag.
     """
-    return f"https://derpibooru.org/tags/{self.slug}"
+    return f"{url_domain}/tags/{self.slug}"
 
   def update(self):
     data = get_tag_data(self.id, proxies=self.proxies)

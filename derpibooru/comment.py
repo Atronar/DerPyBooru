@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_comment_data
+from .request import get_comment_data, url_domain
 
 __all__ = [
   "Comment"
@@ -57,7 +57,7 @@ class Comment(object):
        
   @property
   def url(self):
-    return f"https://derpibooru.org/images/{self.image_id}#comment_{self.id}"
+    return f"{url_domain}/images/{self.image_id}#comment_{self.id}"
 
   def update(self):
     data = get_comment_data(self.id, proxies=self.proxies)

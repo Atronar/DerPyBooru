@@ -26,7 +26,8 @@
 
 from .request import get_forums, get_forum_data, \
                      get_topics, url_topics, get_topic_data, \
-                     get_posts, url_posts
+                     get_posts, url_posts, \
+                     url_domain
 from .helpers import join_params, set_limit, destructive_slug
 from .post import Post
 
@@ -68,7 +69,7 @@ class Forums(object):
     """
     Returns a standart URL of avaliable forums list
     """
-    return "https://derpibooru.org/forums"
+    return f"{url_domain}/forums"
 
   def limit(self, limit):
     """
@@ -131,7 +132,7 @@ class Forum(object):
        
   @property
   def url(self):
-    return f"https://derpibooru.org/forums/{self.short_name}"
+    return f"{url_domain}/forums/{self.short_name}"
 
   @property
   def data(self):
@@ -252,7 +253,7 @@ class Topic(object):
   @property
   def url(self):
     if self.forum_short_name:
-      return f"https://derpibooru.org/forums/{self.forum_short_name}/topics/{self.slug}"
+      return f"{url_domain}/forums/{self.forum_short_name}/topics/{self.slug}"
 
   @property
   def data(self):
