@@ -54,9 +54,10 @@ for image in Search().query("rarity", "twilight sparkle"):
 ### Getting images from other booru
 
 ```python
-import derpibooru
+from derpibooru import Search
 
-derpibooru.request.url_domain = 'https:\\your.booru.example'
+for image in Search(url_domain='https:\\your.booru.example').query("rarity", "twilight sparkle"):
+  print(image.url)
 ```
 
 ### Crawling Derpibooru from first to last post

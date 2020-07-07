@@ -40,12 +40,14 @@ class Galleries(object):
   easy.
   """
   def __init__(self, key="", q=set(), limit=50,
-               per_page=25, page=1, proxies={}):
+               per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes an instance of Galleries with the parameters to get
     the first 25 galleries on Derpibooru's galleries page.
     """
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "key": api_key(key),
       "q": tags(q),
@@ -53,7 +55,8 @@ class Galleries(object):
       "page": set_limit(page)
     }
     self._limit = set_limit(limit)
-    self._search = get_galleries(self._params, self._limit, proxies=self.proxies)
+    self._search = get_galleries(self._params, self._limit,
+                                 url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -78,7 +81,7 @@ class Galleries(object):
 
     https://derpibooru.org/galleries?gallery[title]=*&gallery[description]=&gallery[creator]=&gallery[include_image]=&gallery[sf]=created_at&gallery[sd]=desc
     """
-    return url_galleries(self.parameters)
+    return url_galleries(self.parameters, url_domain=self.url_domain)
 
   def key(self, key=""):
     """
@@ -87,6 +90,7 @@ class Galleries(object):
     """
     params = join_params(self.parameters, {"key": key,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -98,6 +102,7 @@ class Galleries(object):
     """
     params = join_params(self.parameters, {"q": q,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -108,7 +113,9 @@ class Galleries(object):
     Set absolute limit on number of galleries to return, or set to None to return
     as many results as needed; default 50 galleries. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -119,6 +126,7 @@ class Galleries(object):
      query = self.parameters['q'].union(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                          )
 
@@ -131,6 +139,7 @@ class Galleries(object):
      query = self.parameters['q'].difference(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                          )
 
@@ -142,6 +151,7 @@ class Galleries(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -154,6 +164,7 @@ class Galleries(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -163,4 +174,5 @@ class Galleries(object):
     """
     Returns a result wrapped in a new instance of Gallery().
     """
-    return Gallery(next(self._search), search_params=self.parameters, proxies=self.proxies)
+    return Gallery(next(self._search), search_params=self.parameters,
+                   url_domain=self.url_domain, proxies=self.proxies)

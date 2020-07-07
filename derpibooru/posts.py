@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_posts, url_posts
+from .request import get_posts, url_search_posts
 from .post import Post
 from .helpers import tags, join_params, set_limit
 
@@ -40,19 +40,21 @@ class SearchPosts(object):
   easy.
   """
   def __init__(self, q={"created_at.gte:1 week ago",}, limit=50,
-               per_page=25, page=1, proxies={}):
+               per_page=25, page=1, url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes an instance of Posts with the parameters to get
     the first 25 posts on Derpibooru's posts search page.
     """
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "q": tags(q),
       "per_page": set_limit(per_page),
       "page": set_limit(page)
     }      
     self._limit = set_limit(limit)
-    self._search = get_posts(self._params, self._limit, proxies=self.proxies)
+    self._search = get_posts(self._params, self._limit,
+                             url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -77,14 +79,16 @@ class SearchPosts(object):
 
     https://derpibooru.org/posts?page=1&per_page=25&pq=created_at.gte%3A1+week+ago
     """
-    return url_search_posts(self.parameters)
+    return url_search_posts(self.parameters, url_domain=self.url_domain)
 
   def query(self, *q):
     """
     Takes one or more strings for searching by tag and/or metadata.
     """
     params = join_params(self.parameters,
-                         {"q": q, "limit": self._limit, "proxies": self.proxies}
+                         {"q": q, "limit": self._limit,
+                          "url_domain": self.url_domain,
+                          "proxies": self.proxies}
                         )
 
     return self.__class__(**params)
@@ -94,7 +98,9 @@ class SearchPosts(object):
     Set absolute limit on number of posts to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -104,7 +110,9 @@ class SearchPosts(object):
      """
      query = self.parameters['q'].union(q)
      params = join_params(self.parameters,
-                          {"q": query, "limit": self._limit, "proxies": self.proxies}
+                          {"q": query, "limit": self._limit,
+                           "url_domain": self.url_domain,
+                           "proxies": self.proxies}
                          )
 
      return self.__class__(**params)
@@ -115,7 +123,9 @@ class SearchPosts(object):
      """
      query = self.parameters['q'].difference(q)
      params = join_params(self.parameters,
-                          {"q": query, "limit": self._limit, "proxies": self.proxies}
+                          {"q": query, "limit": self._limit,
+                           "url_domain": self.url_domain,
+                           "proxies": self.proxies}
                          )
 
      return self.__class__(**params)
@@ -127,6 +137,7 @@ class SearchPosts(object):
     params = join_params(self.parameters, 
                          {"page": set_limit(page),
                           "limit": self._limit,
+                          "url_domain": self.url_domain,
                           "proxies": self.proxies
                          }
                         )
@@ -141,6 +152,7 @@ class SearchPosts(object):
     params = join_params(self.parameters,
                          {"per_page": set_limit(limit),
                           "limit": self._limit,
+                          "url_domain": self.url_domain,
                           "proxies": self.proxies
                          }
                         )
@@ -151,4 +163,4 @@ class SearchPosts(object):
     """
     Returns a result wrapped in a new instance of Post().
     """
-    return Post(next(self._search), proxies=self.proxies)
+    return Post(next(self._search), url_domain=self.url_domain, proxies=self.proxies)

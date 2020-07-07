@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_user_data, get_user_id_by_name, url_domain
+from .request import get_user_data, get_user_id_by_name
 from .tag import Tag
 from .comments import Comments
 from .search import Search
@@ -36,11 +36,12 @@ __all__ = [
 ]
 
 class Profile(object):
-  def __init__(self, user_id, username="", proxies={}):
+  def __init__(self, user_id, username="", url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     if user_id is None:
-      user_id = get_user_id_by_name(username, proxies=proxies)
-    self._data = get_user_data(user_id, proxies=proxies)
+      user_id = get_user_id_by_name(username, url_domain=url_domain, proxies=proxies)
+    self._data = get_user_data(user_id, url_domain=url_domain, proxies=proxies)
     for field, body in self.data.items():
       if not hasattr(self, field):
         setattr(self, field, body)
@@ -54,10 +55,10 @@ class Profile(object):
        
   @property
   def url(self):
-    return f"{url_domain}/profiles/{self.slug}"
+    return f"{self.url_domain}/profiles/{self.slug}"
 
   def update(self):
-    data = get_user_data(self.id, proxies=self.proxies)
+    data = get_user_data(self.id, url_domain=self.url_domain, proxies=self.proxies)
 
     if data:
       self._data = data
@@ -68,38 +69,40 @@ class Profile(object):
 
   def links(self):
     for link_data in self.data['links']:
-      yield Link(link_data, proxies=self.proxies)
+      yield Link(link_data, url_domain=self.url_domain, proxies=self.proxies)
 
   def comments(self, key="", limit=50, filter_id="", per_page=25, page=1):
     return Comments(user_id=self.id, key=key, limit=limit, filter_id=filter_id,
-                    per_page=per_page, page=page, proxies=self.proxies)
+                    per_page=per_page, page=page,
+                    url_domain=self.url_domain, proxies=self.proxies)
 
   def uploads(self, key="", sf="created_at", sd="desc", limit=50,
               filter_id="", per_page=25, page=1):
     return Search(q=(f"uploader_id:{self.id}",), key=key, sf=sf, sd=sd,
                   limit=limit, filter_id=filter_id, per_page=per_page,
-                  page=page, proxies=self.proxies)
+                  page=page, url_domain=self.url_domain, proxies=self.proxies)
 
   def favorites(self, key="", sf="created_at", sd="desc", limit=50,
                 filter_id="", per_page=25, page=1):
     return Search(q=(f"faved_by_id:{self.id}",), key=key, sf=sf, sd=sd,
                   limit=limit, filter_id=filter_id, per_page=per_page,
-                  page=page, proxies=self.proxies)
+                  page=page, url_domain=self.url_domain, proxies=self.proxies)
 
   def artworks(self, key="", sf="created_at", sd="desc", limit=50,
                filter_id="", per_page=25, page=1):
     artist_tags = {link.tag.name for link in self.links()}
     return Search(q=artist_tags, key=key, sf=sf, sd=sd,
                   limit=limit, filter_id=filter_id, per_page=per_page,
-                  page=page, proxies=self.proxies)
+                  page=page, url_domain=self.url_domain, proxies=self.proxies)
 
   def galleries(self, key="", limit=50, per_page=25, page=1):
     return Galleries(self, key=key, q=(f"user:{self.name}",), limit=limit,
-                     per_page=per_page, page=page, proxies=self.proxies)
+                     per_page=per_page, page=page,
+                     url_domain=self.url_domain, proxies=self.proxies)
 
   def posts(self, limit=50, per_page=25, page=1):
     return SearchPosts(q={f"user_id:{self.id}",}, limit=limit, per_page=per_page,
-                       page=page, proxies=self.proxies)
+                       page=page, url_domain=self.url_domain, proxies=self.proxies)
 
 class Award(object):
   def __init__(self, data):
@@ -116,7 +119,7 @@ class Award(object):
     return self._data
 
 class Link(object):
-  def __init__(self, data, proxies={}):
+  def __init__(self, data, url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
     self._data = data
     for field, body in self.data.items():
@@ -132,5 +135,6 @@ class Link(object):
 
   @property
   def tag(self):
-    return Tag(None, tag_id=self.data["tag_id"], proxies=self.proxies)
+    return Tag(None, tag_id=self.data["tag_id"],
+               url_domain=self.url_domain, proxies=self.proxies)
 

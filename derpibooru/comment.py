@@ -24,17 +24,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_comment_data, url_domain
+from .request import get_comment_data
 
 __all__ = [
   "Comment"
 ]
 
 class Comment(object):
-  def __init__(self, data, comment_id=None, proxies={}):
+  def __init__(self, data, comment_id=None, url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     if data is None and comment_id:
-      self._data = data = get_comment_data(comment_id, proxies=proxies)
+      self._data = data = get_comment_data(comment_id, url_domain=url_domain, proxies=proxies)
     else:
       self._data = data
     for field, body in self.data.items():
@@ -57,10 +58,10 @@ class Comment(object):
        
   @property
   def url(self):
-    return f"{url_domain}/images/{self.image_id}#comment_{self.id}"
+    return f"{self.url_domain}/images/{self.image_id}#comment_{self.id}"
 
   def update(self):
-    data = get_comment_data(self.id, proxies=self.proxies)
+    data = get_comment_data(self.id, url_domain=self.url_domain, proxies=self.proxies)
 
     if data:
       self._data = data

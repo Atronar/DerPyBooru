@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_image_data, get_image_faves, request as request_image, url_domain
+from .request import get_image_data, get_image_faves, request as request_image
 from .comments import Comments
 from .tags import Tags
 from .filters import system_filters
@@ -42,8 +42,10 @@ class Image(object):
   For getting current featured image field data should be None and image_id="featured"
   API key need for checking my:***
   """
-  def __init__(self, data, image_id=None, key="", search_params={}, proxies={}):
+  def __init__(self, data, image_id=None, key="", search_params={},
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     # key needed for checking my:***
     if key:
       self.key = key if key else search_params['key']
@@ -55,7 +57,7 @@ class Image(object):
 
     # Set image_id="featured" for get current featured image
     if data is None and image_id:
-      self._data = data = get_image_data(image_id, proxies=proxies)
+      self._data = data = get_image_data(image_id, url_domain=url_domain, proxies=proxies)
     else:
       self._data = data
 
@@ -119,7 +121,9 @@ class Image(object):
 
     if not faved_by in self.data:
       if self.faves > 0:
-        self._data[faved_by] = get_image_faves(self.id, proxies=self.proxies)
+        self._data[faved_by] = get_image_faves(self.id,
+                                               url_domain=self.url_domain,
+                                               proxies=self.proxies)
       else:
         self._data[faved_by] = []
 
@@ -127,18 +131,20 @@ class Image(object):
 
   def comments(self):
     # filter_id used to get comments for any image
-    return Comments(filter_id=system_filters["everything"], proxies=self.proxies).image_id(self.id)
+    return Comments(filter_id=system_filters["everything"], 
+                    url_domain=self.url_domain, proxies=self.proxies
+                   ).image_id(self.id)
        
   @property
   def url(self):
-    return f"{url_domain}/images/{self.id}"
+    return f"{self.url_domain}/images/{self.id}"
 
   @property
   def data(self):
     return self._data
 
   def update(self):
-    data = get_image_data(self.id, proxies=self.proxies)
+    data = get_image_data(self.id, url_domain=self.url_domain, proxies=self.proxies)
 
     if data:
       self._data = data
@@ -148,13 +154,13 @@ class Image(object):
     self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
     art_tag_list = '(category:origin, namespace:?* || name:artist needed || name:anonymous artist || name:kotobukiya)'
     tags = Tags(q=(self_tag_list,art_tag_list,), per_page=50, 
-                limit=len(self_tag_list), proxies=self.proxies)
+                limit=len(self_tag_list), url_domain=self.url_domain, proxies=self.proxies)
     for tag in tags:
       yield tag.name_in_namespace
 
   @property
   def rating(self):
-    #all_ratings = {tag.name for tag in Tags(q={"category:rating"}, proxies=self.proxies)}
+    #all_ratings = {tag.name for tag in Tags(q={"category:rating"}, url_domain=self.url_domain, proxies=self.proxies)}
     all_ratings = {"safe","suggestive","questionable","explicit",
                    "semi-grimdark","grimdark","grotesque"}
     rating_tags = list(set(self.tags).intersection(all_ratings))
@@ -164,8 +170,9 @@ class Image(object):
   def species(self):
     self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
     sp_tag_list = '(category:species || name:humanized || name:anthro centaur || name:bat alicorn)'
-    tags = Tags(q=(self_tag_list,sp_tag_list,), per_page=50, 
-                limit=len(self_tag_list), proxies=self.proxies)
+    tags = Tags(q=(self_tag_list,sp_tag_list,),
+                per_page=50, limit=len(self_tag_list),
+                url_domain=self.url_domain, proxies=self.proxies)
     for tag in tags:
       yield tag.name_in_namespace
 
@@ -174,7 +181,8 @@ class Image(object):
     self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
     ch_tag_list = '(category:character || category:oc)'
     tags = Tags(q=(self_tag_list,ch_tag_list,"-name:oc","-name:oc only"),
-                per_page=50, limit=len(self_tag_list), proxies=self.proxies)
+                per_page=50, limit=len(self_tag_list),
+                url_domain=self.url_domain, proxies=self.proxies)
     for tag in tags:
       yield tag.name_in_namespace
 
@@ -183,8 +191,9 @@ class Image(object):
     spoiler_tags = []
     self_tag_list = '(' + ' || '.join(f"name:{tag}" for tag in self.tags) + ')'
     sp_tag_list = '(category:spoiler || category:content-official)'
-    tags = Tags(q=(self_tag_list,sp_tag_list,), per_page=50,
-                limit=len(self_tag_list), proxies=self.proxies)
+    tags = Tags(q=(self_tag_list,sp_tag_list,),
+                per_page=50, limit=len(self_tag_list),
+                url_domain=self.url_domain, proxies=self.proxies)
     aliases = []
     for tag in tags:
       if tag.category == "spoiler" and tag.name != "leak":
@@ -195,7 +204,8 @@ class Image(object):
         spoiler_tags.append(tag.name_in_namespace)
     if aliases:
       aliases_str = ' || '.join(f"slug:{tag}" for tag in set(aliases))
-      tags = Tags(q=(aliases_str,), per_page=50, limit=len(aliases), proxies=self.proxies)
+      tags = Tags(q=(aliases_str,), per_page=50, limit=len(aliases),
+                  url_domain=self.url_domain, proxies=self.proxies)
       for tag in tags:
         if tag.category == "spoiler" and tag.name != "leak":
           spoiler_tags.append(tag.name_in_namespace)
@@ -214,8 +224,9 @@ class Image(object):
     """
     Checking image in my:upvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
-                            'q': (f'id:{self.id}','my:upvotes')}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"],
+                            'per_page': 1, 'q': (f'id:{self.id}','my:upvotes')},
+                           url_domain=self.url_domain, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -225,8 +236,9 @@ class Image(object):
     """
     Checking image in my:downvotes.
     """
-    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
-                            'q': (f'id:{self.id}','my:downvotes')}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"],
+                            'per_page': 1, 'q': (f'id:{self.id}','my:downvotes')},
+                           url_domain=self.url_domain, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -236,8 +248,9 @@ class Image(object):
     """
     Checking image in my:uploads.
     """
-    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
-                            'q': (f'id:{self.id}','my:uploads')}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"],
+                            'per_page': 1, 'q': (f'id:{self.id}','my:uploads')},
+                           url_domain=self.url_domain, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -247,8 +260,9 @@ class Image(object):
     """
     Checking image in my:faves.
     """
-    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
-                            'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"],
+                            'per_page': 1, 'q': (f'id:{self.id}','my:faves')},
+                           url_domain=self.url_domain, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -258,8 +272,9 @@ class Image(object):
     """
     Checking image in my:watches.
     """
-    images = request_image({'key': self.key, 'filter_id': system_filters["everything"], 'per_page': 1,
-                            'q': (f'id:{self.id}','my:faves')}, proxies=self.proxies)
+    images = request_image({'key': self.key, 'filter_id': system_filters["everything"],
+                            'per_page': 1, 'q': (f'id:{self.id}','my:faves')},
+                           url_domain=self.url_domain, proxies=self.proxies)
     for img in images:
       return True
     return False
@@ -270,12 +285,12 @@ class Image(object):
     """
     parameters = {**self._params, 'per_page': 1, 'sf': 'created_at'}
     parameters['q'].add(f'id.lt:{self.id}')
-    data = request_image(parameters, proxies=self.proxies)
+    data = request_image(parameters, url_domain=self.url_domain, proxies=self.proxies)
     try:
       return Image(next(data),
                    search_params={**self._params,
                                   'key': self.key if self.key else self._params['key']},
-                   proxies=self.proxies)
+                   url_domain=self.url_domain, proxies=self.proxies)
     except StopIteration:
       return self
   
@@ -286,11 +301,11 @@ class Image(object):
     parameters = {**self._params, 'per_page': 1, 'sf': 'created_at'}
     parameters['q'].add(f'id.gt:{self.id}')
     parameters['sd'] = 'desc' if self._params['sd']=='asc' else 'asc'
-    data = request_image(parameters, proxies=self.proxies)
+    data = request_image(parameters, url_domain=self.url_domain, proxies=self.proxies)
     try:
       return Image(next(data),
                    search_params={**self._params,
                                   'key': self.key if self.key else self._params['key']},
-                   proxies=self.proxies)
+                   url_domain=self.url_domain, proxies=self.proxies)
     except StopIteration:
       return self

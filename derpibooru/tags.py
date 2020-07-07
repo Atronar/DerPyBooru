@@ -41,19 +41,22 @@ class Tags(object):
   interactions predictable as well as making versioning of searches relatively
   easy.
   """
-  def __init__(self, q=set(), limit=50, per_page=25, page=1, proxies={}):
+  def __init__(self, q=set(), limit=50, per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes an instance of Tags with the parameters to get
     the first 25 comments on Derpibooru's tags page.
     """
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "q": tags(q),
       "per_page": set_limit(per_page),
       "page": set_limit(page)
     }
     self._limit = set_limit(limit)
-    self._search = get_tags(self._params, self._limit, proxies=self.proxies)
+    self._search = get_tags(self._params, self._limit,
+                            url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -78,7 +81,7 @@ class Tags(object):
 
     https://derpibooru.org/tags?tq=%2A
     """
-    return url_tags(self._params)
+    return url_tags(self._params, url_domain=self.url_domain)
 
   def query(self, *q):
     """
@@ -86,6 +89,7 @@ class Tags(object):
     """
     params = join_params(self.parameters, {"q": q,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -96,7 +100,9 @@ class Tags(object):
     Set absolute limit on number of tags to return, or set to None to return
     as many results as needed; default 50 tags. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -107,6 +113,7 @@ class Tags(object):
      query = self._params['q'].union(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -119,6 +126,7 @@ class Tags(object):
      query = self._params['q'].difference(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -130,6 +138,7 @@ class Tags(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -142,6 +151,7 @@ class Tags(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -151,4 +161,4 @@ class Tags(object):
     """
     Returns a result wrapped in a new instance of Tag().
     """
-    return Tag(next(self._search), proxies=self.proxies)
+    return Tag(next(self._search), url_domain=self.url_domain, proxies=self.proxies)

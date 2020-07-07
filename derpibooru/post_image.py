@@ -42,9 +42,11 @@ class PostImage(object):
   You must provide the direct link to the image in the url parameter.
   """
   def __init__(self, key="", image_url="", description="", 
-               tag_input=set(), source_url="", proxies={}):
+               tag_input=set(), source_url="",
+               url_domain="https://derpibooru.org", proxies={}):
 
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "key": api_key(key),
       "image_url": validate_url(image_url),
@@ -71,6 +73,7 @@ class PostImage(object):
     be found at <https://derpibooru.org/registration/edit>.
     """
     params = join_params(self.parameters, {"key": key,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -81,6 +84,7 @@ class PostImage(object):
     Direct link to the image.
     """
     params = join_params(self.parameters, {"image_url": image_url,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -94,6 +98,7 @@ class PostImage(object):
     Can be 50000 bytes max.
     """
     params = join_params(self.parameters, {"description": description,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -104,6 +109,7 @@ class PostImage(object):
     Describe with 3+ tags, including ratings and applicable artist tags
     """
     params = join_params(self.parameters, {"tag_input": tags,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -114,6 +120,7 @@ class PostImage(object):
     Describe with 3+ tags, including ratings and applicable artist tags
     """
     params = join_params(self.parameters, {"source_url": source_url,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -147,11 +154,12 @@ class PostImage(object):
         duplicates = self.check_duplicate()
         if duplicates:
           raise DuplicateError(self.parameters, duplicates)
-      response = post_image(**self.parameters, proxies=self.proxies)
+      response = post_image(**self.parameters, url_domain=self.url_domain, proxies=self.proxies)
       if "errors" in response:
         raise ImageError(response["errors"])
       else:
-        return Image(response["image"])
+        return Image(response["image"], key=self.parameters['key'],
+                     url_domain=self.url_domain, proxies=self.proxies)
     else:
       raise PostError(self.parameters)
 
@@ -201,7 +209,7 @@ class PostImage(object):
     """
     query = ' || '.join(f"name:{tag}" for tag in self.parameters['tag_input'])
     tags = Tags(q=(query,), per_page=50, limit=len(self.parameters['tag_input']),
-                proxies=self.proxies)
+                url_domain=self.url_domain, proxies=self.proxies)
     tags_count = {tag.name: (tag.allias_parent().images if tag.allias_parent() else tag.images) 
                   for tag in tags}
     num_tags = {tag_name:(tags_count[tag_name] if tag_name in tags_count else 0) 
@@ -210,7 +218,7 @@ class PostImage(object):
     for tag_name in num_tags:
       if num_tags[tag_name]==0:
         ft = list(Tags(q=(f"name:{tag_name}~1.0",), per_page=50, limit=1,
-                       proxies=self.proxies))
+                       url_domain=self.url_domain, proxies=self.proxies))
         if ft:
           fix_tags[tag_name] = ft[0].name
         else:
@@ -225,7 +233,7 @@ class PostImage(object):
     """
     query = ' || '.join(f"name:{tag}" for tag in self.parameters['tag_input'])
     tags = Tags(q=(query,), per_page=50, limit=len(self.parameters['tag_input']),
-                proxies=self.proxies)
+                url_domain=self.url_domain, proxies=self.proxies)
     dnp_tags = {tag.name:tag.dnp_entries for tag in tags if tag.dnp_entries}
     return dnp_tags
 
@@ -235,7 +243,7 @@ class PostImage(object):
     """
     reverse = tuple(Search(reverse_url=self.parameters['image_url'],
                           distance=0.25,
-                          proxies=self.proxies))
+                          url_domain=self.url_domain, proxies=self.proxies))
     if reverse:
       return reverse
     return False
@@ -246,6 +254,7 @@ class PostImage(object):
     """
     new_tags = self.parameters['tag_input'].union(tags)
     params = join_params(self.parameters, {"tag_input": new_tags,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -257,6 +266,7 @@ class PostImage(object):
     """
     new_tags = self.parameters['tag_input'].difference(tags)
     params = join_params(self.parameters, {"tag_input": new_tags,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 

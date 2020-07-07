@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_filters, get_filter_data, url_domain
+from .request import get_filters, get_filter_data
 from .helpers import api_key, join_params, set_limit, validate_filter
 
 __all__ = [
@@ -40,8 +40,10 @@ system_filters = {"default": 100073,
                   "dark": 37429}
 
 class Filters(object):
-  def __init__(self, key="", filters_id="", limit=50, per_page=25, page=1, proxies={}):
+  def __init__(self, key="", filters_id="", limit=50, per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "key": api_key(key),
       "per_page": set_limit(per_page),
@@ -56,7 +58,7 @@ class Filters(object):
       
     self._limit = set_limit(limit)
     self._search = get_filters(filters_id, self._params, 
-                               self._limit, proxies=self.proxies)
+                               self._limit, url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -78,7 +80,7 @@ class Filters(object):
     """
     Returns a standart URL of avaliable filters list
     """
-    return f"{url_domain}/filters"
+    return f"{self.url_domain}/filters"
 
   def key(self, key=""):
     """
@@ -87,6 +89,7 @@ class Filters(object):
     """
     params = join_params(self.parameters, {"key": key,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -97,7 +100,9 @@ class Filters(object):
     Set absolute limit on number of filters to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -107,6 +112,7 @@ class Filters(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -119,6 +125,7 @@ class Filters(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -128,7 +135,7 @@ class Filters(object):
     """
     Returns a result wrapped in a new instance of Filter().
     """
-    return Filter(None, data=next(self._search), proxies=self.proxies)
+    return Filter(None, data=next(self._search), url_domain=self.url_domain, proxies=self.proxies)
 
 class Filter(object):
   """
@@ -136,8 +143,9 @@ class Filter(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   """
-  def __init__(self, filter_id, data=None, proxies={}):
+  def __init__(self, filter_id, data=None, url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
 
     if filter_id is None and data:
       self._data = data
@@ -145,7 +153,8 @@ class Filter(object):
       norm_str_filter_id = f"{filter_id}".lower()
       if norm_str_filter_id in system_filters:
         filter_id = system_filters[norm_str_filter_id]
-      self._data = data = get_filter_data(validate_filter(filter_id), proxies=proxies)
+      self._data = data = get_filter_data(validate_filter(filter_id),
+                                          url_domain=url_domain, proxies=proxies)
 
     for field, body in data.items():
       if not hasattr(self, field):

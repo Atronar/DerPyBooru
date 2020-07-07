@@ -26,8 +26,7 @@
 
 from .request import get_forums, get_forum_data, \
                      get_topics, url_topics, get_topic_data, \
-                     get_posts, url_posts, \
-                     url_domain
+                     get_posts, url_posts
 from .helpers import join_params, set_limit, destructive_slug
 from .post import Post
 
@@ -40,14 +39,16 @@ __all__ = [
 ]
 
 class Forums(object):
-  def __init__(self, limit=50, per_page=25, page=1, proxies={}):
+  def __init__(self, limit=50, per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "per_page": set_limit(per_page),
       "page": set_limit(page)
     }      
     self._limit = set_limit(limit)
-    self._search = get_forums(self._params, self._limit, proxies=self.proxies)
+    self._search = get_forums(self._params, self._limit, url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -69,14 +70,16 @@ class Forums(object):
     """
     Returns a standart URL of avaliable forums list
     """
-    return f"{url_domain}/forums"
+    return f"{self.url_domain}/forums"
 
   def limit(self, limit):
     """
     Set absolute limit on number of forums to return, or set to None to return
     as many results as needed; default 50 forums. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -86,6 +89,7 @@ class Forums(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -98,6 +102,7 @@ class Forums(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -107,7 +112,7 @@ class Forums(object):
     """
     Returns a result wrapped in a new instance of Forum().
     """
-    return Forum(next(self._search), proxies=self.proxies)
+    return Forum(next(self._search), url_domain=self.url_domain, proxies=self.proxies)
 
 class Forum(object):
   """
@@ -115,11 +120,13 @@ class Forum(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   """
-  def __init__(self, data, short_name=None, proxies={}):
+  def __init__(self, data, short_name=None,
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
 
     if data is None and short_name:
-      self._data = data = get_forum_data(short_name, proxies=proxies)
+      self._data = data = get_forum_data(short_name, url_domain=url_domain, proxies=proxies)
     else:
       self._data = data
 
@@ -132,33 +139,35 @@ class Forum(object):
        
   @property
   def url(self):
-    return f"{url_domain}/forums/{self.short_name}"
+    return f"{self.url_domain}/forums/{self.short_name}"
 
   @property
   def data(self):
     return self._data
 
   def update(self):
-    data = get_forum_data(self.short_name, proxies=self.proxies)
+    data = get_forum_data(self.short_name, url_domain=self.url_domain, proxies=self.proxies)
 
     if data:
       self._data = data
 
   def topics(self, limit=50, per_page=25, page=1):
-    return Topics(self.short_name, limit=limit,
-                  per_page=per_page, page=page, proxies=self.proxies)
+    return Topics(self.short_name, limit=limit, per_page=per_page, page=page,
+                  url_domain=self.url_domain, proxies=self.proxies)
 
 class Topics(object):
-  def __init__(self, forum_short_name, limit=50, per_page=25, page=1, proxies={}):
+  def __init__(self, forum_short_name, limit=50, per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self.forum_short_name = forum_short_name
     self._params = {
       "per_page": set_limit(per_page),
       "page": set_limit(page)
     }      
     self._limit = set_limit(limit)
-    self._search = get_topics(forum_short_name, self._params,
-                              self._limit, proxies=self.proxies)
+    self._search = get_topics(forum_short_name, self._params, self._limit,
+                              url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -183,14 +192,16 @@ class Topics(object):
 
     https://derpibooru.org/forums/forum?page=1&per_page=25
     """
-    return url_topics(self.forum_short_name, self.parameters)
+    return url_topics(self.forum_short_name, self.parameters, url_domain=self.url_domain)
 
   def limit(self, limit):
     """
     Set absolute limit on number of topics to return, or set to None to return
     as many results as needed; default 50 topics. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -200,6 +211,7 @@ class Topics(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -212,6 +224,7 @@ class Topics(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -222,7 +235,7 @@ class Topics(object):
     Returns a result wrapped in a new instance of Topic().
     """
     return Topic(next(self._search), forum_short_name=self.forum_short_name,
-                 proxies=self.proxies)
+                 url_domain=self.url_domain, proxies=self.proxies)
 
 class Topic(object):
   """
@@ -230,8 +243,10 @@ class Topic(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   """
-  def __init__(self, data, forum_short_name=None, topic_name=None, slug=True, proxies={}):
+  def __init__(self, data, forum_short_name=None, topic_name=None, slug=True,
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self.forum_short_name = forum_short_name
 
     if data is None and forum_short_name and topic_name:
@@ -239,7 +254,8 @@ class Topic(object):
         topic_slug = destructive_slug(topic_name)
       else:
         topic_slug = topic_name
-      self._data = data = get_topic_data(forum_short_name, topic_slug, proxies=proxies)
+      self._data = data = get_topic_data(forum_short_name, topic_slug,
+                                         url_domain=self.url_domain, proxies=proxies)
     else:
       self._data = data
 
@@ -253,7 +269,7 @@ class Topic(object):
   @property
   def url(self):
     if self.forum_short_name:
-      return f"{url_domain}/forums/{self.forum_short_name}/topics/{self.slug}"
+      return f"{self.url_domain}/forums/{self.forum_short_name}/topics/{self.slug}"
 
   @property
   def data(self):
@@ -261,7 +277,8 @@ class Topic(object):
 
   def update(self):
     if self.forum_short_name:
-      data = get_topic_data(self.forum_short_name, self.slug, proxies=self.proxies)
+      data = get_topic_data(self.forum_short_name, self.slug,
+                            url_domain=self.url_domain, proxies=self.proxies)
       if data:
         self._data = data
 
@@ -269,12 +286,14 @@ class Topic(object):
     if not forum_short_name:
       forum_short_name = self.forum_short_name
     return Posts(forum_short_name, self.slug, slug=False, limit=limit,
-                 per_page=per_page, page=page, proxies=self.proxies)
+                 per_page=per_page, page=page,
+                 url_domain=self.url_domain, proxies=self.proxies)
 
 class Posts(object):
   def __init__(self, forum_short_name, topic_name, slug=True, limit=50,
-               per_page=25, page=1, proxies={}):
+               per_page=25, page=1, url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self.forum_short_name = forum_short_name
     if slug:
       self.topic_slug = destructive_slug(topic_name)
@@ -287,7 +306,7 @@ class Posts(object):
     self._limit = set_limit(limit)
     self._search = get_posts(self._params, forum_short_name=self.forum_short_name,
                              topic_slug=self.topic_slug, limit=self._limit,
-                             proxies=self.proxies)
+                             url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -312,14 +331,16 @@ class Posts(object):
 
     https://derpibooru.org/forums/forum/topics/topic?page=1&per_page=25
     """
-    return url_posts(self.forum_short_name, self.topic_slug, self.parameters)
+    return url_posts(self.forum_short_name, self.topic_slug, self.parameters, url_domain=self.url_domain)
 
   def limit(self, limit):
     """
     Set absolute limit on number of posts to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -329,6 +350,7 @@ class Posts(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -341,6 +363,7 @@ class Posts(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -350,4 +373,4 @@ class Posts(object):
     """
     Returns a result wrapped in a new instance of Post().
     """
-    return Post(next(self._search), proxies=self.proxies)
+    return Post(next(self._search), url_domain=self.url_domain, proxies=self.proxies)

@@ -46,13 +46,15 @@ class Search(object):
   def __init__(self, key="", q=set(), sf="created_at", sd="desc",
                limit=50, faves="", upvotes="", uploads="", watched="",
                filter_id="", per_page=25, page=1,
-               reverse_url="", distance=0.25, proxies={}):
+               reverse_url="", distance=0.25,
+               url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes an instance of Search with the parameters to get
     the first 25 images on Derpibooru's front page.
     For reverse searching by image use reverse_url field.
     """
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "key": api_key(key),
       "reverse_url": reverse_url,
@@ -95,7 +97,8 @@ class Search(object):
          self._params["q"].add("-my:watched")
       
     self._limit = set_limit(limit)
-    self._search = get_images(self._params, self._limit, proxies=self.proxies)
+    self._search = get_images(self._params, self._limit,
+                              url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -120,7 +123,7 @@ class Search(object):
 
     https://derpibooru.org/search?sd=desc&sf=created_at&q=%2A
     """
-    return url(self.parameters)
+    return url(self.parameters, url_domain=self.url_domain)
 
   def key(self, key=""):
     """
@@ -129,6 +132,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"key": key,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -140,6 +144,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"q": q,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -153,6 +158,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"sf": sf,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -164,6 +170,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"sd": "desc",
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -175,6 +182,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"sd": sd,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -185,7 +193,9 @@ class Search(object):
     Set absolute limit on number of images to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit,
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -198,6 +208,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"filter_id": validate_filter(filter_id),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -276,6 +287,7 @@ class Search(object):
      query = self.parameters['q'].union(q)
      params = join_params(self.parameters, {"q": query,
                                             "limit": self._limit,
+                                            "url_domain": self.url_domain,
                                             "proxies": self.proxies}
                          )
 
@@ -288,6 +300,7 @@ class Search(object):
      query = self.parameters['q'].difference(q)
      params = join_params(self.parameters, {"q": query,
                                             "limit": self._limit,
+                                            "url_domain": self.url_domain,
                                             "proxies": self.proxies}
                          )
 
@@ -295,16 +308,16 @@ class Search(object):
 
   def get_related(self,image):
     if isinstance(image,Image):
-      return Related(image, key=self.parameters['key'], limit=self._limit, \
-                     filter_id=self.parameters['filter_id'], \
-                     per_page=self.parameters['per_page'], \
-                     proxies=self.proxies)
+      return Related(image, key=self.parameters['key'], limit=self._limit,
+                     filter_id=self.parameters['filter_id'],
+                     per_page=self.parameters['per_page'],
+                     url_domain=self.url_domain, proxies=self.proxies)
     else:
-      return Related(Image(None, image_id=image, proxies=self.proxies), \
-                     key=self.parameters['key'], limit=self._limit, \
-                     filter_id=self.parameters['filter_id'], \
-                     per_page=self.parameters['per_page'], \
-                     proxies=self.proxies)
+      return Related(Image(None, image_id=image, url_domain=self.url_domain, proxies=self.proxies),
+                     key=self.parameters['key'], limit=self._limit,
+                     filter_id=self.parameters['filter_id'],
+                     per_page=self.parameters['per_page'],
+                     url_domain=self.url_domain, proxies=self.proxies)
 
   def get_page(self,page):
     """
@@ -312,6 +325,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -324,6 +338,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -335,6 +350,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"reverse_url": url,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -346,6 +362,7 @@ class Search(object):
     """
     params = join_params(self.parameters, {"distance": set_distance(distance),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -355,7 +372,8 @@ class Search(object):
     """
     Returns a result wrapped in a new instance of Image().
     """
-    return Image(next(self._search), search_params=self.parameters, proxies=self.proxies)
+    return Image(next(self._search), search_params=self.parameters,
+                 url_domain=self.url_domain, proxies=self.proxies)
 
 class Related(Search):
   """
@@ -364,7 +382,8 @@ class Related(Search):
   This class should returns Search() for any query-like actions.
   """
   def __init__(self, image, key="", limit=50,
-               filter_id="", per_page=25, proxies={}):
+               filter_id="", per_page=25,
+               url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes with the parameters to get the first 25 related images.
     """
@@ -372,6 +391,7 @@ class Related(Search):
       self.proxies = proxies
     else:
       self.proxies = image.proxies
+    self.url_domain = url_domain
     self.image = image
     self._params = {
       "key": api_key(key) if key else api_key(image._params['key']),
@@ -379,7 +399,8 @@ class Related(Search):
       "per_page": set_limit(per_page)
     }
     self._limit = set_limit(limit)
-    self._search = get_related(self.image.id, self._params, self._limit, proxies=self.proxies)
+    self._search = get_related(self.image.id, self._params, self._limit,
+                               url_domain=self.url_domain, proxies=self.proxies)
 
   @property
   def url(self):
@@ -389,7 +410,7 @@ class Related(Search):
 
     https://derpibooru.org/images/***/related?key=&filter_id=&per_page=25
     """
-    return url_related(self.image.id, self.parameters)
+    return url_related(self.image.id, self.parameters, url_domain=self.url_domain)
 
   def query(self, *q):
     """
@@ -397,6 +418,7 @@ class Related(Search):
     """
     params = join_params(self.parameters, {"q": q,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
     return Search(**params)
@@ -443,6 +465,7 @@ class Related(Search):
     """
     params = join_params(self.parameters, {"reverse_url": url,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 

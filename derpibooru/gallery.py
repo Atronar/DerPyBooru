@@ -24,7 +24,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .request import get_galleries, url_domain
+from .request import get_galleries
 from .search import Search
 from .image import Image
 
@@ -38,13 +38,16 @@ class Gallery(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   """
-  def __init__(self, data, gallery_id=None, search_params={}, proxies={}):
+  def __init__(self, data, gallery_id=None, search_params={},
+               url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = search_params
 
     if data is None and gallery_id:
       search_params['q'] = (f"id:{gallery_id}",)
-      self._data = data = next(get_galleries(search_params, 1, proxies=proxies))
+      self._data = data = next(get_galleries(search_params, limit=1,
+                                             url_domain=url_domain, proxies=proxies))
     else:
       self._data = data
 
@@ -57,14 +60,15 @@ class Gallery(object):
        
   @property
   def url(self):
-    return f"{url_domain}/galleries/{self.id}"
+    return f"{self.url_domain}/galleries/{self.id}"
 
   @property
   def data(self):
     return self._data
 
   def update(self):
-    data = next(get_galleries(self._params, 1, proxies=self.proxies))
+    data = next(get_galleries(self._params, limit=1,
+                              url_domain=self.url_domain, proxies=self.proxies))
 
     if data:
       self._data = data
@@ -72,7 +76,8 @@ class Gallery(object):
   @property
   def thumbnail(self):
     return Image(None, image_id=self.thumbnail_id,
-                 search_params=self._params, proxies=self.proxies)
+                 search_params=self._params,
+                 url_domain=self.url_domain, proxies=self.proxies)
   
   def images(self, sf="created_at", sd="desc", limit=50,
              faves="", upvotes="", uploads="", watched="",
@@ -81,4 +86,4 @@ class Gallery(object):
                   q=(f"gallery_id:{self.id}",), sf=sf, sd=sd, limit=limit,
                   faves=faves, upvotes=upvotes, uploads=uploads, watched=watched,
                   filter_id=filter_id, per_page=per_page, page=page,
-                  proxies=self.proxies)
+                  url_domain=self.url_domain, proxies=self.proxies)

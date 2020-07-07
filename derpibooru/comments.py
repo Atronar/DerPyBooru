@@ -43,12 +43,14 @@ class Comments(object):
   """
   def __init__(self, key="", q=set(), limit=50, filter_id="",
                author="", body="", created_at="", comment_id="", image_id="",
-               my=None, user_id="", per_page=25, page=1, proxies={}):
+               my=None, user_id="", per_page=25, page=1,
+               url_domain="https://derpibooru.org", proxies={}):
     """
     By default initializes an instance of Comments with the parameters to get
     the first 25 comments on Derpibooru's comments activity page.
     """
     self.proxies = proxies
+    self.url_domain = url_domain
     self._params = {
       "key": api_key(key),
       "q": search_comments_fields(q, author=author, body=body,
@@ -59,7 +61,7 @@ class Comments(object):
       "page": set_limit(page)
     }
     self._limit = set_limit(limit)
-    self._search = get_comments(self._params, self._limit, proxies=self.proxies)
+    self._search = get_comments(self._params, self._limit, url_domain=self.url_domain, proxies=self.proxies)
   
   def __iter__(self):
     """
@@ -84,7 +86,7 @@ class Comments(object):
 
     https://derpibooru.org/comments?qc=%2A
     """
-    return url_comments(self._params)
+    return url_comments(self._params, url_domain=self.url_domain)
 
   def key(self, key=""):
     """
@@ -93,6 +95,7 @@ class Comments(object):
     """
     params = join_params(self.parameters, {"key": key,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -104,6 +107,7 @@ class Comments(object):
     """
     params = join_params(self.parameters, {"q": q,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -114,7 +118,9 @@ class Comments(object):
     Set absolute limit on number of images to return, or set to None to return
     as many results as needed; default 50 posts. This limit on app-level.
     """
-    params = join_params(self.parameters, {"limit": limit, "proxies": self.proxies})
+    params = join_params(self.parameters, {"limit": limit, 
+                                           "url_domain": self.url_domain,
+                                           "proxies": self.proxies})
 
     return self.__class__(**params)
 
@@ -127,6 +133,7 @@ class Comments(object):
     """
     params = join_params(self.parameters, {"filter_id": validate_filter(filter_id),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -199,6 +206,7 @@ class Comments(object):
      query = self._params['q'].union(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                          )
 
@@ -211,6 +219,7 @@ class Comments(object):
      query = self._params['q'].difference(q)
      params = join_params(self.parameters, {"q": query,
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                          )
 
@@ -222,6 +231,7 @@ class Comments(object):
     """
     params = join_params(self.parameters, {"page": set_limit(page),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -234,6 +244,7 @@ class Comments(object):
     """
     params = join_params(self.parameters, {"per_page": set_limit(limit),
                                            "limit": self._limit,
+                                           "url_domain": self.url_domain,
                                            "proxies": self.proxies}
                         )
 
@@ -243,4 +254,4 @@ class Comments(object):
     """
     Returns a result wrapped in a new instance of Comment().
     """
-    return Comment(next(self._search), proxies=self.proxies)
+    return Comment(next(self._search), url_domain=self.url_domain, proxies=self.proxies)

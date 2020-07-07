@@ -7,7 +7,7 @@ setup(
   name = "DerPyBooruPhi",
   description = "Python bindings for Philomena-based boorus' API like Ponybooru, Derpibooru, etc.",
   url = "https://github.com/Atronar/DerPyBooruPhi",
-  version = "0.10.1",
+  version = "0.10.2",
   author = "ATroN",
   author_email = "master.atron@gmail.com",
   license = "Simplified BSD License",

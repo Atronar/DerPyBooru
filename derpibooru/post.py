@@ -36,11 +36,12 @@ class Post(object):
   its own property. Once instantiated the data is immutable so as to reflect
   the stateless nature of a REST API.
   """
-  def __init__(self, data, post_id=None, proxies={}):
+  def __init__(self, data, post_id=None, url_domain="https://derpibooru.org", proxies={}):
     self.proxies = proxies
+    self.url_domain = url_domain
 
     if data is None and post_id:
-      self._data = data = get_post_data(post_id, proxies=proxies)
+      self._data = data = get_post_data(post_id, url_domain=url_domain, proxies=proxies)
     else:
       self._data = data
 
@@ -63,7 +64,7 @@ class Post(object):
     return self._data
 
   def update(self):
-    data = get_post_data(self.id, proxies=self.proxies)
+    data = get_post_data(self.id, url_domain=self.url_domain, proxies=self.proxies)
 
     if data:
       self._data = data
