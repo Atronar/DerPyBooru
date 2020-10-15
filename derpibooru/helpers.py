@@ -261,3 +261,11 @@ def destructive_slug(string):
     output = output.replace("--","-")
   output = output.strip("-").lower()
   return output
+
+def url_abs(url_domain,url):
+  if url.startswith('//'):
+    return f"https:{url}"
+  if url.startswith('/'):
+    return f"{url_domain}{url}"
+  else:
+    return url

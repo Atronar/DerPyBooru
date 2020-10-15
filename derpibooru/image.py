@@ -28,6 +28,7 @@ from .request import get_image_data, get_image_faves, request as request_image
 from .comments import Comments
 from .tags import Tags
 from .filters import system_filters
+from .helpers import url_abs
 
 __all__ = [
   "Image"
@@ -75,7 +76,7 @@ class Image(object):
   @property
   def representations(self):
     sizes = self.data["representations"].items()
-    images = { image: url for image, url in sizes }
+    images = { image: url_abs(self.url_domain,url) for image, url in sizes }
 
     return images
 
@@ -113,7 +114,7 @@ class Image(object):
 
   @property
   def image(self):
-    return self.data["view_url"]
+    return url_abs(self.url_domain,self.data["view_url"])
 
   @property
   def faved_by(self):
