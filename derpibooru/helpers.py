@@ -149,7 +149,7 @@ def validate_description(string):
         n -= 1
 
 def sort_format(sf):
-  if sf not in sort.methods:
+  if sf not in sort.methods and not sf.startswith("gallery_id:"):
     raise AttributeError(sf)
   else:
     return sf
