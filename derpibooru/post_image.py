@@ -146,7 +146,7 @@ class PostImage(object):
         if dnp_tags:
           br = '\n'
           dnp_reasons = br.join(f"{tag_name} : [\n" \
-                                f"{br.join(dnp_entry['conditions'] for dnp_entry in dnp_tags[tag_name]) : >len(tag_name)}\n]" \
+                                f"{br.join(dnp_entry['conditions'] for dnp_entry in dnp_tags[tag_name]) : >{len(tag_name)}}\n]" \
                                 for tag_name in sorted(dnp_tags))
           raise TagsError(self.parameters['tag_input'], 
                           reason=f"DNP\n{dnp_reasons}")
