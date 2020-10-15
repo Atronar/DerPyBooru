@@ -4,7 +4,7 @@ Python bindings for Philomena-based boorus' API like Ponybooru, Derpibooru, etc.
 
 License: **Simplified BSD License**
 
-Version: **0.10.1**
+Version: **0.10.3**
 
 ## Features
 
